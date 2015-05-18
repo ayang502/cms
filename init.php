@@ -1,5 +1,8 @@
 <?php
+$table = 'v9';
 require_once __DIR__ . "/common/Db.php";
+require_once __DIR__ . "/common/func.php";
+require_once __DIR__ . "/scripts/base.php";
 class helper {
     private static $conf = array();
     private static $dbObjs = array();
