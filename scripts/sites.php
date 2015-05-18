@@ -45,7 +45,6 @@ class cms_sites {
 
     
     public function insertCmsSite() {
-        //$this->cdb->truncateTable($this->table . '_site');
         foreach ($this->sites as $v) {
             $arr = array();
             $a =  $style = '';
@@ -64,8 +63,9 @@ class cms_sites {
             $arr['uuid'] = guid();
             $arr['setting'] = $this->setting;
             if (!empty($v['IndexTpl'])) {
+                $v['IndexTpl'] = ltrim($v['IndexTpl'], "/");
                 $a = explode("/", $v['IndexTpl']);
-                $style = array_pop($a);
+                $style = array_shift($a);
             } else {
                 $style = 'default';
             }
