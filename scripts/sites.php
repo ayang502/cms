@@ -45,7 +45,7 @@ class cms_sites {
 
     
     public function insertCmsSite() {
-        $this->cdb->truncateTable($this->table . '_site');
+        //$this->cdb->truncateTable($this->table . '_site');
         foreach ($this->sites as $v) {
             $arr = array();
             $a =  $style = '';
@@ -71,8 +71,10 @@ class cms_sites {
             }
             $arr['default_style'] = $style;
             $arr['template'] = $style;
+            if ($arr['siteid'] == 1) {
+                $res = $this->cdb->update($this->table . '_site', $arr, 'siteid=1');
+            }
             $res = $this->cdb->insert($this->table."_site", $arr);
-            var_dump($res);
         }
     }
 }

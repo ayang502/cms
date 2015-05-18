@@ -31,8 +31,18 @@ class Db {
         $f = '(`' . join('`,`', $keys) . '`)';
         $v = "\"" . join("\",\"", $arr) . "\"";
         $sql = "insert into {$table} {$f} values({$v})";
-        echo $sql;
-        echo "\n";
+        $this->_connect();
+        return $this->_objLink->exec($sql);
+    }
+    public function update($table, $arr, $where) {
+        $sql = "update {$table} set ";
+        foreach ($arr as $k=>$v) {
+            $tmp[] = $k . '="'.$v.'"';
+        }
+        $sql .= join(',', $tmp);
+        if (!empty($where)) {
+            $sql .= ' where ' . $where; 
+        }
         $this->_connect();
         return $this->_objLink->exec($sql);
     }

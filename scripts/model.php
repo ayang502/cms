@@ -7,9 +7,9 @@ class cms_model extends base {
         $this->res = $this->wdb->fetchAll($sql);
         $this->getBaseWareSites();
         $this->syncModel();
-        $this->syncModelField();
-        $this->syncTable();
-        $this->syncData();
+        //$this->syncModelField();
+        //$this->syncTable();
+        //$this->syncData();
     }
     public function syncModel() {
         $iputType =  array(
@@ -35,7 +35,7 @@ class cms_model extends base {
                 $this->tables["cmsware_content_".$v['TableID']][] = $tablename;
                 $arr['tablename'] = "content_{$site['NodeID']}_{$v['TableID']}";
                 $arr['addtime'] = time();
-                //$this->cdb->insert($this->table . '_model', $arr);
+                $this->cdb->insert($this->table . '_model', $arr);
             }
         }
     }
