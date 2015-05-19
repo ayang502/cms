@@ -24,14 +24,13 @@ class cms_category extends base {
         parent::__construct();
         $this->wtable = 'cmsware_site';
         $this->ctable = $this->table . '_category';
+        $this->getBaseWareSites();
     }
     public function run() {
         $this->insertCmsCategory();
-        $this->getBaseWareSites();
     }
 
     public function insertCmsCategory() {
-        $this->getBaseWareSites();
         foreach($this->sites as $v) {
             $sql = "select * from {$this->wtable} where ParentID = {$v['NodeID']}";
             $res = $this->wdb->fetchAll($sql);
