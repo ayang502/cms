@@ -1,8 +1,7 @@
 <?php
-require_once __DIR__ . "/../init.php";
 //迁移站点设置
-class cms_sites {
-    private $setting = "
+class sites extends base {
+    private $setting = 
         array (
             'upload_maxsize' => '2048',
             'upload_allowext' => 'jpg|jpeg|gif|bmp|png|doc|docx|xls|xlsx|ppt|pptx|pdf|txt|rar|zip|swf',
@@ -13,37 +12,13 @@ class cms_sites {
             'watermark_pct' => '85',
             'watermark_quality' => '80',
             'watermark_pos' => '9',
-        )
-        ";
+        );
     public function __construct() {
-        global $table;
-        $this->table = $table;
-        $this->cdb = helper::getDB('phpcms');
         $this->wdb = helper::getDB('cmsware');
         $this->getBaseWareSites();
         $this->getcmsware_psn();
     }
-    public function run() {
-        $this->insertCmsSite();
-    }
 
-    public function getBaseWareSites() {
-        $s = "select * from cmsware_site where ParentID=0";
-        $this->sites = $this->wdb->fetchAll($s);
-    }
-
-    public function getcmsware_psn(){
-        $s = "select * from cmsware_psn";
-        $psn = $this->wdb->fetchAll($s);
-        foreach ($psn as $v) {
-            $this->psn[$v['PSNID']] = $v;
-            $arr = explode("/", $v['PSN']);
-            $this->psn[$v['PSNID']]['DIR'] = array_pop($arr);
-            $this->psn[$v['PSNID']]['URL'] = $v['URL'] . '/';
-        }
-    }
-
-    
     public function insertCmsSite() {
         foreach ($this->sites as $v) {
             $arr = array();
@@ -54,9 +29,10 @@ class cms_sites {
                 $arr['domain'] = $this->psn[$a]['URL'];
                 $arr['dirname'] = $this->psn[$a]['DIR'];
             } else {
-                $arr['domain'] = 'http://cms.uker.net/';
+                $arr['domain'] = '';
                 $arr['dirname'] = 'html';
             }
+            $arr['dirname'] .= "_{$v['NodeID']}"; 
             $arr['siteid'] = $v['NodeID'];
             $arr['name'] = $v['Name'];
             $arr['site_title'] = $v['Name'];
@@ -71,12 +47,8 @@ class cms_sites {
             }
             $arr['default_style'] = $style;
             $arr['template'] = $style;
-            if ($arr['siteid'] == 1) {
-                $res = $this->cdb->update($this->table . '_site', $arr, 'siteid=1');
-            }
-            $res = $this->cdb->insert($this->table."_site", $arr);
+            $res[] = $arr;
         }
+        return $res;
     }
 }
-$obj = new cms_sites();
-$obj->run();

@@ -7,6 +7,7 @@ class base {
         $this->wdb = helper::getDB('cmsware');
     }
 
+    
     public function getBaseWareSites() {
         $s = "select * from cmsware_site where ParentID=0";
         $this->sites = $this->wdb->fetchAll($s);
@@ -21,5 +22,9 @@ class base {
             $this->psn[$v['PSNID']]['DIR'] = array_pop($arr);
             $this->psn[$v['PSNID']]['URL'] = $v['URL'] . '/';
         }
+    }
+
+    public function mappingModelID($siteid, $oldTableID) {
+        return intval($siteid . $oldTableID + 1);
     }
 }

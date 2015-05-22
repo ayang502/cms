@@ -25,6 +25,13 @@ class Db {
         $data = $st->fetchAll(PDO::FETCH_ASSOC);
         return $data;
     }
+    public function fetchOne($strSql) {
+        $this->_connect();
+        $st = $this->_objLink->prepare($strSql);
+        $st->execute();
+        $data = $st->fetch(PDO::FETCH_ASSOC);
+        return $data;
+    }
 
     public function insert($table, $arr) {
         $keys = array_keys($arr);
