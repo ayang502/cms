@@ -23,9 +23,11 @@ function guid(){
     }
 }
 function strReplaceAssoc(array $replace, $subject) { 
+    global $replace;
     return str_replace(array_keys($replace), array_values($replace), $subject);    
 }
 function parseSelect($str) {
+    global $replace;
     $str = strReplaceAssoc($replace, $str); 
     $arr = explode("\n", $str);
     foreach ($arr as $k=>$v) {
@@ -36,10 +38,15 @@ function parseSelect($str) {
         }
     }
     $count = count($new);
+
     for ($i=0;$i<$count/2;$i++) {
-        $insert[] = $new[$i] . '|' . $new[$i+1];
+        if (!isset($new[$i+1])) {
+            $insert[] = $new[$i] . '|' . '';
+        } else {
+            $insert[] = $new[$i] . '|' . $new[$i+1];
+        }
     }
-    return $insert;
+    return join("\n", $insert);
 }
 function parseSelectDefault($str) {
     $arr = explode(';', $str);

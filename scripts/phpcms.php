@@ -7,7 +7,7 @@ class phpcms {
         $url = LOGINURL . '&dosubmit=1';
         $res = curl_post($url, $post_fields);
         if (!strpos($res, "登录成功")) {
-            exit("登录失败了");
+            return false;
         }
         return $res;
     }

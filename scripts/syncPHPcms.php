@@ -24,18 +24,39 @@ class syncPHPcms extends phpcms {
                 $post['info'] = $vv;
                 $post['siteid'] = $siteid;
                 $post['dosubmit'] = 1;
-                $res = curl_post(ADDMODULEURL, $post);
-                echo strip_tags($res);
-                echo "\n";
+                $res = curl_post(ADDMODELEURL, $post);
+                $a = strip_tags($res);
+                if (false === strpos($a, '成功')) {
+                    echo $a;
+                    echo "\n";
+                }
             }
         }
     }
     public function syncModelFields() {
+        $obj = new model();
+        $arr = $obj->getModelField(1);
+        foreach ($arr as $v) {
+            $post['info'] = $v;
+            $post['setting'] = isset($v['setting'])?$v['setting']:array();
+            $post['dosubmit'] = 1;
+            $post['tablename'] = $v['tablename'];
+            $res = curl_post(ADDMODELFIELDEURL . '&modelid=' . $v['modelid'] , $post);
+            $a = strip_tags($res);
+            if (false === strpos($a, '成功')){
+                echo $a;
+                echo "\n";
+                exit;
+            }
+        }
 
     }
 }
 
 $obj = new syncPHPcms();
-$obj->loginCms();
-$obj->syncSite();
-$obj->syncModel();
+$res = $obj->loginCms();
+if ($res) {
+    //$obj->syncSite();
+    $obj->syncModel();
+    $obj->syncModelFields();
+}

@@ -1,6 +1,14 @@
 <?php
 class model extends base {
-    public function run() {
+    public function __construct() {
+        parent::__construct();
+        $this->field2formtype = array(
+            'text'       => 'text',
+            'RichEditor' => 'editor',
+            'textaera'   => 'textarea',
+            'select'     => 'box',
+            'checkbox'   => 'box',
+        );
         $this->default = require __DIR__ . "/default_model_field.php";
         
     }
@@ -8,6 +16,7 @@ class model extends base {
         $sql = "delete from {$this->table}_model where modelid > 10";
         $r = $this->cdb->execute($sql);
     }
+
     public function getModelName() {
         $sql = "select * from v9_site";
         $res = $this->cdb->fetchAll($sql);
@@ -25,67 +34,77 @@ class model extends base {
         }
         return $result;
     }
-    
-    public function syncModelField($siteid) {
+    public function getCMModel() {
+        $sql = "select * from cmsware_content_table";
+        $res = $this->wdb->fetchAll($sql);
+        foreach ($res as $v) {
+            $this->cmmodel[$v['TableID']] = $v['Name'];
+        }
+    }
+    public function getCmsModelID($name, $siteid) {
+        $sql = "select * from {$this->table}_model where name='{$name}' and siteid={$siteid}";
+        $res = $this->cdb->fetchOne($sql);
+        return $res;
+    }
+    public function getModelField($siteid) {
+        $this->getCMModel();
         $sql = "select * from cmsware_content_fields order by TableID asc"; 
         $res = $this->wdb->fetchAll($sql);
         $arr = $this->default;
         foreach ($res as $k=>$v) {
-            $tmp =  $this->getSome($v['FieldInputPicker']); 
-            if (!empty($tmp)) {
-                $tmp['formtype'] = $ttt['formtype'];
-                $tmp['setting'] = $ttt['setting'];
-                $tmp['setting'] = str_replace("#relation#", $v['FieldName'], $tmp['setting']);
-            }
-
-            $tmp['siteid'] = $siteid;
-            $tmp['field'] = $v['FieldName'];
-            $tmp['name'] = $v['FieldTitle'];
-            $tmp['minlength'] = 0;
-            $tmp['minlength'] = $v['FieldSize'];;
-            
-            $tmp['issearch'] = $v['FieldSearchable'];
-            $arr = array();
             if ($v['IsTitleField'] == 1) {
                 continue;
             }
             if ($v['FieldName'] == 'Keywords') {
                 continue;
             }
-            $tmp['formtype'] = 'text';
-            $res = $this->getSetting($v);
-            if (!empty($res)) {
-                $tmp['setting'] = $res;
+
+            if (strtolower($v['FieldName']) == 'content') {
+                continue;
+            } 
+            if (strtolower($v['FieldName']) == 'customlinks') {
+                continue;
             }
-            print_r($tmp);
-            exit;
+            $tmp = array();
+            $modelname = $this->cmmodel[$v['TableID']];
+            $model = $this->getCmsModelID($modelname, $siteid);
+            $tmp =  $this->getSepcSetting($v); 
+            
+            if (isset($tmp['formtype']) && !empty($tmp['formtype'])) {
+                $tmp['formtype'] = $tmp['formtype'];
+            } else {
+                $tmp['formtype'] = $this->field2formtype[$v['FieldInput']];
+            }
+            if (isset($tmp['setting']) && !empty($tmp['setting'])) {
+                $tmp['setting'] = $tmp['setting'];
+                $tmp['setting'] = str_replace("#relation#", $v['FieldName'], $tmp['setting']);
+            }
+            $tmp['siteid'] = $siteid;
+            $tmp['field'] = $v['FieldName'];
+            $tmp['name'] = $v['FieldTitle'];
+            $tmp['minlength'] = 0;
+            if ($v['FieldType'] == 'longtext') {
+                $tmp['maxlength'] = 0;
+            } elseif ($v['FieldType'] == 'mediumtext') {
+                $tmp['maxlength'] = 0;
+            } else {
+                $tmp['maxlength'] = $v['FieldSize'];;
+            }
+            $tmp['issearch'] = $v['FieldSearchable'];
+            $tmp['modelid'] = $model['modelid'];
+            $tmp['tablename'] = $model['tablename'];
+            $tmp['issystem'] = 0;
+            $tmp['isbase'] = 1;
+            $tmp['isadd'] = 1;
+            $tmp['listorder'] = 19;
+            $return[] = $tmp;
         }
+        return $return;
     }
-    /*
-    public function getSetting($v) {
-        if ($v['FieldInput'] == 'select') {
-            if (!empty($v['FieldDefaultValue'])) {
-                $default = parseSelectDefault($v['FieldDefaultValue']);
-            }
-            if (!empty($v['FieldDescription'])) {
-                $default = parseSelectDefault($v['FieldDefaultValue']);
-            }
-            return array2string(array (
-                'options' => {$default},
-                'boxtype' => 'select',
-                'fieldtype' => 'varchar',
-                'minnumber' => '1',
-                'width' => '80',
-                'size' => '1',
-                'defaultvalue' => '',
-                'outputtype' => '1',
-            ));
-        }
-        return '';
-    }
-    public function getSome($FieldInputPicker) {
+
+    public function getSepcSetting($v) {
         $tmp = array();
-        if ($FieldInputPicker == 'upload') {
+        if ($v['FieldInputPicker'] == 'upload') {
             $tmp['formtype'] = 'image';
             $tmp['setting'] = array (
                 'size' => '50',
@@ -99,8 +118,8 @@ class model extends base {
                 'images_height' => '',
             );
         }
-        if ($FieldInputPicker == 'upload_attach') {
-            $tmp['formtype'] == 'downfiles';
+        if ($v['FieldInputPicker'] == 'upload_attach') {
+            $tmp['formtype'] = 'downfiles';
             $tmp['setting'] = array (
                 'upload_allowext' => 'zip|rar|doc|xls|txt|jpg|gif|pdf|ppt',
                 'isselectimage' => '1',
@@ -109,7 +128,7 @@ class model extends base {
                 'downloadtype' => '1',
             );
         }
-        if ($FieldInputPicker == 'content') {
+        if ($v['FieldInputPicker'] == 'content') {
             $tmp['formtype'] = 'omnipotent';
             $tmp['setting'] = array (
                     'formtext' => '<input type=\'hidden\' name=\'info[#relation#]\' id=\'#relation#\' value=\'{FIELD_VALUE}\' style=\'50\' >
@@ -125,11 +144,27 @@ class model extends base {
             );
             $tmp['isomnipotent'] = 1;
         }
-        if (isset($tmp['setting'])) {
-            $tmp['setting'] = array2string($tmp['setting']);
+        if ($v['FieldInput'] == 'select' || $v['FieldInput'] == 'checkbox') {
+            if (!empty($v['FieldDefaultValue'])) {
+                $default = parseSelectDefault($v['FieldDefaultValue']);
+            }
+            if (!empty($v['FieldDescription']) || false !== strpos($v['FieldDescription'], '<value>')) {
+                $default = parseSelect($v['FieldDescription']);
+            }
+            $tmp['setting'] = array (
+                'fieldtype' => 'varchar',
+                'minnumber' => '1',
+                'width' => '80',
+                'size' => '1',
+                'defaultvalue' => '',
+                'outputtype' => '1',
+            );
+            if (!empty($default)) {
+                $tmp['setting']['options'] = $default;
+            }
+            $tmp['setting']['boxtype'] = $v['FieldInput'];
+            $tmp['formtype'] = $this->field2formtype[$v['FieldInput']];
         }
-
         return $tmp;
     }
-     */
 }

@@ -10,4 +10,5 @@ define ('COOKIE_JAR', "/tmp/cookie.jar");
 define ('LOGINURL', CMSURL . 'index.php?m=admin&c=index&a=login&pc_hash='.$pc_hash);
 define ('ADDSITEURL', CMSURL . '?m=admin&c=site&a=add');
 define ('EDITSITEURL', CMSURL . '?m=admin&c=site&a=edit');
-define ('ADDMODULEURL', CMSURL . '?m=content&c=sitemodel&a=add&pc_hash='.$pc_hash);
+define ('ADDMODELEURL', CMSURL . '?m=content&c=sitemodel&a=add&pc_hash='.$pc_hash);
+define ('ADDMODELFIELDEURL', CMSURL . '?m=content&c=sitemodel_field&a=add&pc_hash='.$pc_hash);
