@@ -51,12 +51,43 @@ class syncPHPcms extends phpcms {
         }
 
     }
+    public function syncCategory() { 
+        $cate = new category();
+        $r = $cate->getCmsSite();
+        $w = $cate->getCwSite();
+        foreach ($w as $k=>$v) {
+            $siteid = $r[$k];
+            $c = array();
+            $a = $cate->get_category($v, 0, $c);
+            foreach ($a as $level=>$v) {
+                foreach ($v as $parent=>$vv) {
+                    foreach ($vv as $vvv) {
+                        if ($level == 0) {
+                            $tmp = 0; 
+                        } else {
+                            $tmp = $parent;
+                        }
+                        $post = $cate->genPost($vvv, $tmp);
+                        $post['dosubmit'] = 1;
+                        $post['siteid'] = $siteid;
+                        $url = sprintf(ADDCATEFIELDEURL, $parent, $level);
+                        $res = curl_post($url, $post);
+                        if (false === strpos($res, '成功')) {
+                            echo $res;
+                            echo "\n";
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 $obj = new syncPHPcms();
 $res = $obj->loginCms();
 if ($res) {
     //$obj->syncSite();
-    $obj->syncModel();
-    $obj->syncModelFields();
+    //$obj->syncModel();
+    //$obj->syncModelFields();
+    $obj->syncCategory();
 }

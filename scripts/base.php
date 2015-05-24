@@ -27,4 +27,22 @@ class base {
     public function mappingModelID($siteid, $oldTableID) {
         return intval($siteid . $oldTableID + 1);
     }
+
+    public function getCmsSite() {
+        $sql = "select * from {$this->table}_site";
+        $res = $this->cdb->fetchAll($sql);
+        foreach ($res as $k=>$v) {
+            $return[$v['name']] = $v['siteid'];
+        }
+        return $return;
+    }
+    public function getCwSite() {
+        $sql = "select * from cmsware_site where ParentID = 0";
+        $res = $this->wdb->fetchAll($sql);
+        foreach ($res as $k=>$v) {
+            $return[$v['Name']] = $v['NodeID'];
+        }
+        return $return;
+
+    }
 }

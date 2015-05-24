@@ -67,3 +67,39 @@ function curl_post($url, $post_fields) {
     curl_close($ch);
     return $content;
 }
+function mapUrlRule($str) {
+    $url = 31;
+    switch($str) {
+        case  '{ContentID}.html' :
+            $url = "31";
+        break;
+        case 'Y-m-d{TimeStamp}d{ContentID}.html' : 
+            $url = "32";
+        break;
+        case '{TimeStamp}d{ContentID}.html' : 
+            $url = "34";
+        break;
+        case '{IndexID}/index.html':
+            $url = "35";
+        break;
+        case 'Y-m-d{IndexID}/index.html':
+            $url = "35";
+        break;
+        case "[@pubSchool('{SchoolID}')]{ContentID}.html";
+            $url = "31";
+        break;
+        case 'sitemap_{ContentID}.xml';
+            $url = "33";
+        break;
+        case 'Y-m-d{ContentID}.html';
+            $url = "31";
+        break;
+        case "[@strtolower(@str_replace('''-','{E_Name_s}'))].html":
+            $url = "31";
+        break;
+        case "Y-m-d[@pubSchool('{SchoolID}')]{ContentID}.html":
+            $url = "31";
+        break;
+    }
+    return $url;
+}
