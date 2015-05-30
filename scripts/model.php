@@ -12,10 +12,7 @@ class model extends base {
         $this->default = require __DIR__ . "/default_model_field.php";
         
     }
-    public function deleteModel() {
-        $sql = "delete from {$this->table}_model where modelid > 10";
-        $r = $this->cdb->execute($sql);
-    }
+
 
     public function getModelName() {
         $sql = "select * from v9_site";
@@ -55,16 +52,22 @@ class model extends base {
             if ($v['IsTitleField'] == 1) {
                 continue;
             }
-            if ($v['FieldName'] == 'Keywords') {
-                continue;
-            }
-
-            if (strtolower($v['FieldName']) == 'content') {
-                continue;
-            } 
+            
+            /*
             if (strtolower($v['FieldName']) == 'customlinks') {
                 continue;
             }
+            if ($v['FieldName'] == 'Keywords') {
+                continue;
+            }
+            if ($v['FieldName'] == 'Intro') {
+                continue;
+            }
+            */
+            if ($v['FieldName'] == 'TitleColor') {
+                continue;
+            }
+
             $tmp = array();
             $modelname = $this->cmmodel[$v['TableID']];
             $model = $this->getCmsModelID($modelname, $siteid);
@@ -84,11 +87,13 @@ class model extends base {
             $tmp['name'] = $v['FieldTitle'];
             $tmp['minlength'] = 0;
             if ($v['FieldType'] == 'longtext') {
-                $tmp['maxlength'] = 0;
+                $tmp['maxlength'] = '';
             } elseif ($v['FieldType'] == 'mediumtext') {
-                $tmp['maxlength'] = 0;
+                $tmp['maxlength'] = '';
+            } else if (empty($v['FieldSize'])) {
+                $tmp['maxlength'] = '';
             } else {
-                $tmp['maxlength'] = $v['FieldSize'];;
+                $tmp['maxlength'] = intval($v['FieldSize']);
             }
             $tmp['issearch'] = $v['FieldSearchable'];
             $tmp['modelid'] = $model['modelid'];
@@ -97,6 +102,18 @@ class model extends base {
             $tmp['isbase'] = 1;
             $tmp['isadd'] = 1;
             $tmp['listorder'] = 19;
+
+            if ($v['FieldName'] == 'Editor') {
+                $tmp['maxlength'] = 40;
+            }
+            if (strtolower($v['FieldName']) == 'content') {
+                $sql = "update {$this->table}_model_field set disabled=0 where field = 'content' and modelid={$tmp['modelid']};\n";
+                error_log($sql, 3, "alter.sql");
+                continue;
+            }
+            if ($v['FieldSize'] == 0 && $tmp['formtype'] == 'text') {
+                $tmp['formtype'] = 'textarea';
+            }
             $return[] = $tmp;
         }
         return $return;
@@ -117,6 +134,7 @@ class model extends base {
                 'images_width' => '',
                 'images_height' => '',
             );
+            return $tmp;
         }
         if ($v['FieldInputPicker'] == 'upload_attach') {
             $tmp['formtype'] = 'downfiles';
@@ -127,24 +145,26 @@ class model extends base {
                 'downloadlink' => '1',
                 'downloadtype' => '1',
             );
+            return $tmp;
         }
-        if ($v['FieldInputPicker'] == 'content') {
+        if ($v['FieldInputPicker'] == 'content' || $v['FieldType'] == 'contentlink') {
             $tmp['formtype'] = 'omnipotent';
             $tmp['setting'] = array (
-                    'formtext' => '<input type=\'hidden\' name=\'info[#relation#]\' id=\'#relation#\' value=\'{FIELD_VALUE}\' style=\'50\' >
+                    'formtext' => "<input type='hidden' name='info[#relation#]' id='#relation#' value='{FIELD_VALUE}' style='50'>
                     <ul class=\"list-dot\" id=\"#relation#_text\"></ul>
                     <div>
-                    <input type=\'button\' value=\"添加相关\" onclick=\"omnipotent(\'selectid\',\'?m=content&c=content&a=public_relationlist&modelid={MODELID}\',\'添加相关\',1)\" class=\"button\" style=\"width:66px;\">
+                    <input type='button' value=\"添加相关\" onclick=\"omnipotent('selectid','?m=content&c=content&a=public_relationlist&modelid={MODELID}','添加相关',1)\" class=\"button\" style=\"width:66px;\">
                     <span class=\"edit_content\">
-                    <input type=\'button\' value=\"显示已有\" onclick=\"show_relation({MODELID},{ID})\" class=\"button\" style=\"width:66px;\">
+                    <input type='button' value=\"显示已有\" onclick=\"show_relation({MODELID},{ID})\" class=\"button\" style=\"width:66px;\">
                     </span>
-                    </div>',
+                    </div>",
                     'fieldtype' => 'varchar',
                     'minnumber' => '1',
             );
-            $tmp['isomnipotent'] = 1;
+            $tmp['isomnipotent'] = 0;
+            return $tmp;
         }
-        if ($v['FieldInput'] == 'select' || $v['FieldInput'] == 'checkbox') {
+        if ($v['FieldInput'] == 'select' || $v['FieldInput'] == 'checkbox' || $v['FieldInputPicker'] == 'dsn_content') {
             if (!empty($v['FieldDefaultValue'])) {
                 $default = parseSelectDefault($v['FieldDefaultValue']);
             }
@@ -162,9 +182,19 @@ class model extends base {
             if (!empty($default)) {
                 $tmp['setting']['options'] = $default;
             }
-            $tmp['setting']['boxtype'] = $v['FieldInput'];
-            $tmp['formtype'] = $this->field2formtype[$v['FieldInput']];
+            if ($v['FieldInput'] == 'select') {
+                $tmp['setting']['boxtype'] = 'select';
+            } else if ($v['FieldInput'] == 'checkbox') {
+                $tmp['setting']['boxtype'] = 'checkbox';
+            } else {
+                $tmp['setting']['boxtype'] = 'select';
+            }
+            if ($v['FieldInputPicker'] == 'dsn_content') {
+                $tmp['formtype'] = 'box';
+            }else {
+                $tmp['formtype'] = $this->field2formtype[$v['FieldInput']];
+            }
+            return $tmp;
         }
-        return $tmp;
     }
 }

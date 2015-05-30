@@ -21,6 +21,12 @@ class sites extends base {
 
     public function insertCmsSite() {
         foreach ($this->sites as $v) {
+            if ($v['Name'] == '采集文章') {
+                continue;
+            }
+            if ($v['Name'] == '废弃节点') {
+                continue;
+            }
             $arr = array();
             $a =  $style = '';
             if (!empty($v['ResourcePSN'])) {

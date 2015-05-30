@@ -13,3 +13,7 @@ define ('EDITSITEURL', CMSURL . '?m=admin&c=site&a=edit');
 define ('ADDMODELEURL', CMSURL . '?m=content&c=sitemodel&a=add&pc_hash='.$pc_hash);
 define ('ADDMODELFIELDEURL', CMSURL . '?m=content&c=sitemodel_field&a=add&pc_hash='.$pc_hash);
 define ('ADDCATEFIELDEURL', CMSURL . '?m=admin&c=category&a=add&menuid=43&parentid=%d&s=%d&pc_hash='.$pc_hash);
+
+
+define ('ADDCONENTURL', CMSURL . '?m=content&c=content&a=add&menuid=&catid=%d&pc_hash='.$pc_hash.'&pc_hash='.$pc_hash);
+define ('CLEANCACHE', CMSURL . '?m=admin&c=cache_all&a=init&pc_hash='.$pc_hash);

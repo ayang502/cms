@@ -1,0 +1,22 @@
+文章系统模型
+Title title
+Intro description
+Content content
+
+
+DegreeType title
+CompanyName title
+UserFullname title
+SchoolName title
+about_SchoolID title
+
+学校中心模型
+S_Name title
+Intro content
+
+免费评估
+UserFullname title
+
+资源中心模型
+Intro content
+CustomLinks relation

@@ -6,7 +6,9 @@ class category extends base {
         $this->wtable = 'cmsware_site';
         $this->ctable = $this->table . '_category';
     }
-
+    public function getRootID () {
+        $res = $this->getCwSite(); 
+    }
     public function get_category($category_pid=0, $level=0, &$c){
         $sql = "select * from {$this->wtable} where ParentID = $category_pid";
         $result = $this->wdb->fetchAll($sql);
@@ -19,15 +21,29 @@ class category extends base {
         }
         return $c;
     }
-
-    public function genPost($v, $parent) {
+    public function getModelID($name, $siteid) {
+        $sql = "select * from {$this->table}_model where siteid={$siteid} and name='{$name}'";
+        return $this->cdb->fetchOne($sql);
+    }
+    public function getWareModel($tableid) {
+        $sql = "select Name from cmsware_content_table where TableID={$tableid}";
+        return $this->wdb->fetchOne($sql);
+    }
+    public function genPost($v, $parent, $siteid) {
         $post = $info = $setting = array();
         $info['catid'] = $v['NodeID'];
         $info['parentid'] = $parent;
+        if ($v['TableID'] > 12) {
+            $v['TableID'] = '1';
+        }
+        $res = $this->getWareModel($v['TableID']);
+        $name = $res['Name'];
+        $res = $this->getModelID($name, $siteid);
+        
+        $info['modelid'] = $res['modelid'];
         $info['catname'] = $v['Name'];
         $info['catdir'] = $v['NodeID'];
         $info['ismenu'] = 0;
-
         if ($v['PublishMode'] == 1) {
             $setting['ishtml'] = 1;
             $post['category_ruleid'] = 35;
@@ -43,5 +59,8 @@ class category extends base {
         $post['info'] = $info;
         $post['setting'] = $setting;
         return $post;
+    }
+    public function deleteCate() {
+        return $this->cdb->truncateTable($this->table.'_category');
     }
 }

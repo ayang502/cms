@@ -22,8 +22,7 @@ function guid(){
         return $uuid;
     }
 }
-function strReplaceAssoc(array $replace, $subject) { 
-    global $replace;
+function strReplaceAssoc($replace, $subject) { 
     return str_replace(array_keys($replace), array_values($replace), $subject);    
 }
 function parseSelect($str) {
@@ -34,17 +33,20 @@ function parseSelect($str) {
         $v = trim($v);
         if (!empty($v)) {
             $tmp = strReplaceAssoc(array('<value>'=>'', '</value>'=>'', '<title>'=>'', '</title>'=>''), $v);
+            if (empty($tmp)) {
+                $tmp = "";
+            }
             $new[] = $tmp;
         }
     }
     $count = count($new);
-
-    for ($i=0;$i<$count/2;$i++) {
+    for ($i=0;$i<$count;) {
         if (!isset($new[$i+1])) {
             $insert[] = $new[$i] . '|' . '';
         } else {
             $insert[] = $new[$i] . '|' . $new[$i+1];
         }
+        $i = $i+2;
     }
     return join("\n", $insert);
 }
