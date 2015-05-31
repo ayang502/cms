@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . "/../init.php";
 class syncPHPcms extends phpcms {
-    public function __constrcut($nodeID, $tableID) {
-        $this->nodeID  = $nodeID;
-        $this->tableID = $tableID;
+    public function __construct($nodeID) {
+        $this->nodeID = $nodeID;
     }
 
     public function syncContent() {
@@ -12,7 +11,7 @@ class syncPHPcms extends phpcms {
         while(true) {
             $obj = new content();
             $wdb = helper::getDB('cmsware');
-            $sql = "select * from cmsware_content_index where NodeID={$this->nodeID} and TableID={$this->tableID} and IndexID > {$id} order by IndexID asc limit 100"; 
+            $sql = "select * from cmsware_content_index where NodeID in ({$this->nodeID})  and IndexID > {$id} order by IndexID asc limit 100"; 
             $res = $wdb->fetchAll($sql);
             if (empty($res)) {
                 break;
@@ -51,12 +50,9 @@ class syncPHPcms extends phpcms {
         error_log($end-$start, 3, "time");
     } 
 }
-$nodeID  = $argv[1];
-$tableID = $argv[2];
-if (empty($tableID)) {
-    exit("没有tableID");
-}
-$obj = new syncPHPcms($siteID, $tableID);
+$NodeID = $argv[1];
+
+$obj = new syncPHPcms($NodeID);
 $res = $obj->loginCms();
 
 if ($res) {

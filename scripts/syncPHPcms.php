@@ -139,7 +139,6 @@ $obj = new syncPHPcms();
 $res = $obj->loginCms();
 
 if ($res) {
-    /*
     $obj->syncSite();
     $obj->syncModel();
     $obj->syncModelFields();
@@ -149,6 +148,4 @@ if ($res) {
     }
     $obj->syncUrlrule();
     $obj->syncCategory();
-     */
-    $obj->syncContent();
 }
