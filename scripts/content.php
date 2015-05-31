@@ -1,16 +1,26 @@
 <?php
 class content extends base {
+    public function getmodelID($catid) {
+        $sql = "select modelid from {$this->table}_category where catid=$catid";
+        return $this->cdb->fetchOne($sql);
+    }
     public function genPost($res, $status, $catid, $tableid) {
         if (false === $this->isCatExists($catid)) {
             return;
         }
+        $tmp = $this->getmodelID($catid);
+        $modelid = $tmp['modelid'];
+        unset($tmp);
+        $res['modelid'] = $modelid;
         $res['catid'] = $catid;
-        $res['inputtime']   = $res['PublishDate'];
-        $res['id'] = $res['ContentID'];
-        if (empty($res['ContentID'])) {
-            print_r($res);
+        
+        if (!isset($res['ContentID']) || empty($res['ContentID'])) {
             return;
         }
+        if (isset($res['PublishDate'])) {
+            $res['inputtime']   = $res['PublishDate'];
+        }
+        $res['id'] = $res['ContentID'];
         $res['url'] = $res['URL'];
         $res['status'] = $status;
         $method = "genContent{$tableid}";
@@ -131,15 +141,17 @@ class content extends base {
     }
 
     public function getContent($tableid, $contentid) {
+        $wdb = helper::getDB('cmsware');
         $table = "cmsware_content_{$tableid}";
         $sql = "select * from {$table} where ContentID={$contentid}";
-        return $this->wdb->fetchOne($sql);
+        return $wdb->fetchOne($sql);
     }
 
     public function getPublish($tableid, $contentid) {
+        $wdb = helper::getDB('cmsware');
         $table = "cmsware_publish_{$tableid}";
         $sql = "select * from {$table} where ContentID={$contentid}";
-        return $this->wdb->fetchOne($sql);
+        return $wdb->fetchOne($sql);
     }
     public function getSiteId($catid) {
         $sql = "select siteid from {$this->table}_category where catid={$catid}";

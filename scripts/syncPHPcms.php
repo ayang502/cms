@@ -27,8 +27,7 @@ class syncPHPcms extends phpcms {
                 $res = curl_post(ADDMODELEURL, $post);
                 $a = strip_tags($res);
                 if (false === strpos($a, '成功')) {
-                    echo $a;
-                    echo "\n";
+                    error_log("$a\n", 3, "model.log");
                 }
             }
         }
@@ -47,10 +46,7 @@ class syncPHPcms extends phpcms {
                 $res = curl_post(ADDMODELFIELDEURL . '&modelid=' . $v['modelid'] , $post);
                 $a = strip_tags($res);
                 if (false === strpos($a, '成功')){
-                    var_Dump($post);
-                    echo $a;
-                    echo "\n";
-                    exit;
+                    error_log("$a\n", 3, "field.log");
                 }
             }
         } 
@@ -79,8 +75,7 @@ class syncPHPcms extends phpcms {
                         $url = sprintf(ADDCATEFIELDEURL, $parent, $level);
                         $res = curl_post($url, $post);
                         if (false === strpos($res, '成功')) {
-                            echo $res;
-                            echo "\n";
+                            error_log("\n$res", 3, "category.log");
                         }
                     }
                 }
@@ -95,28 +90,23 @@ class syncPHPcms extends phpcms {
     }
 
     public function syncContent() {
-        $obj = new content();
+        $start = time();
         $id = 0;
-        $id = 0;
-        $wdb = helper::getDB('cmsware');
         while(true) {
-            usleep(1000);
-            if (!$wdb) $wdb = helper::getDB('cmsware');
-$sql = "select * from cmsware_content_index where TableID=7 and IndexID > {$id} order by IndexID asc limit 100"; 
+            $obj = new content();
+            $wdb = helper::getDB('cmsware');
+            $sql = "select * from cmsware_content_index where IndexID > {$id} order by IndexID asc limit 100"; 
             $res = $wdb->fetchAll($sql);
             if (empty($res)) {
                 break;
             }
             foreach ($res as $k=>$v) {
                 $id = $v['IndexID'];
-                echo $id;
-                echo "\n";
                 $catid = $v['NodeID'];
                 $arr = array();
-                
                 $arr = $obj->getPublish($v['TableID'], $v['ContentID']);
                 $status = 99;
-                if (empty($res)) {
+                if (empty($arr)) {
                     $arr = $obj->getContent($v['TableID'], $v['ContentID']);
                     $status = 1;
                 }
@@ -124,45 +114,41 @@ $sql = "select * from cmsware_content_index where TableID=7 and IndexID > {$id} 
                 $post['dosubmit'] = 1;
                 $tmp = $obj->getSiteId($catid);
                 $post['siteid'] = $tmp['siteid'];
-
                 $a = $obj->genPost($arr, $status, $catid, $v['TableID']);
-                if (empty($a)) continue;
-
+                error_log("$id\n", 3, "id.log");
+                if (empty($a)) {
+                    error_log("$id\n", 3, "indexid.log");    
+                    continue;
+                }
                 $post['info'] = $a;
-
                 $url = sprintf(ADDCONENTURL, $catid);
                 $res = curl_post($url, $post);
                 $a = strip_tags($res);
                 if (false === strpos($a, '成功')){
-                    print_r($post);
-                    echo $a;
-                    echo "\n";
-                    exit;
+                    error_log($v['ContentID']."\n", 3, "content.log");
+                    error_log("$a\n", 3, "content.log");
                 }            
             }
         }
+        $end = time();
+        error_log($end-$start, 3, "time");
     } 
-    public function cleanCache() {
-        $res = curl_post(CLEANCACHE, array('dosubmit' => 1));
-        var_dump($res);
-    }
 }
 
 $obj = new syncPHPcms();
 $res = $obj->loginCms();
 
 if ($res) {
-    //$obj->syncSite();
-    //$obj->syncModel();
-    //$obj->syncModelFields();
     /*
+    $obj->syncSite();
+    $obj->syncModel();
+    $obj->syncModelFields();
     if (is_file("alter.sql")) {
         $tmp = new base();
         $tmp->cdb->execute("alter.sql");
     }
+    $obj->syncUrlrule();
+    $obj->syncCategory();
      */
-
-    //$obj->syncUrlrule();
-    //$obj->syncCategory();
     $obj->syncContent();
 }
