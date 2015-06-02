@@ -24,12 +24,17 @@ class content extends base {
         $res['url'] = $res['URL'];
         $res['status'] = $status;
         $res['sysadd'] = $res['CreationUserID'];
-        $res['username'] = $res['CreationUserID'];
+        $res['username'] = $this->getusername($res['sysadd']);
         $method = "genContent{$tableid}";
         return $this->$method($res);
     }
-    public function getusername() {
-
+    public function getusername($id) {
+        $sql = "select username from {$this->table}_admin where userid={$id}";
+        $res = $this->cdb->fetchOne($sql);
+        if (empty($res)) {
+            return 'admin';
+        }
+        return $res['usernmae'];
     }
     public function genContent1($res) {
         if (empty($res['Title'])) {
