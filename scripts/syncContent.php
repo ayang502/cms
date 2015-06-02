@@ -20,11 +20,17 @@ class syncPHPcms extends phpcms {
                 $id = $v['IndexID'];
                 $catid = $v['NodeID'];
                 $arr = array();
-                $arr = $obj->getPublish($v['TableID'], $v['ContentID']);
+                $publish = $obj->getPublish($v['TableID'], $v['ContentID']);
+                $content = $obj->getContent($v['TableID'], $v['ContentID']);
                 $status = 99;
-                if (empty($arr)) {
-                    $arr = $obj->getContent($v['TableID'], $v['ContentID']);
+                if (empty($publish)) {
                     $status = 1;
+                }
+                $arr = empty($publish) ?  $content : $publish; 
+                if (!empty($content)) {
+                    $arr['CreationUserID'] = $content['CreationUserID'];
+                } else {
+                    $arr['CreationUserID'] = 1;
                 }
                 $arr['URL'] = $v['URL'];
                 $post['dosubmit'] = 1;
