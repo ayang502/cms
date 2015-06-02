@@ -21,7 +21,6 @@ foreach ($res as $v) {
     $tmp = $db->fetchOne($sql);
     $arr[$v['tmp']] = $tmp['num'];
 }
-print_r($arr);
 asort($arr);
 foreach ($arr as $nodeid=>$num) {
     if ($num < 1000) {

@@ -17,3 +17,6 @@ define ('ADDCATEFIELDEURL', CMSURL . '?m=admin&c=category&a=add&menuid=43&parent
 
 define ('ADDCONENTURL', CMSURL . '?m=content&c=content&a=add&menuid=&catid=%d&pc_hash='.$pc_hash.'&pc_hash='.$pc_hash);
 define ('CLEANCACHE', CMSURL . '?m=admin&c=cache_all&a=init&pc_hash='.$pc_hash);
+
+define ('ADDROLE', CMSURL . '?m=admin&c=role&a=add&menuid=50&pc_hash='.$pc_hash);
+define ('ADDUSER', CMSURL . '?m=admin&c=admin_manage&a=add&menuid=54&pc_hash='.$pc_hash);

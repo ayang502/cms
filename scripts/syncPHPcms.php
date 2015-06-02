@@ -8,6 +8,8 @@ class syncPHPcms extends phpcms {
         foreach ($arr as $v) {
             $post = $v;
             $post['dosubmit'] = 1;
+            print_r($post);
+            continue;
             if ($v['siteid'] ==1) {
                 $res = curl_post(EDITSITEURL . '&siteid='.$v['siteid'], $post);
             } else {
@@ -133,6 +135,22 @@ class syncPHPcms extends phpcms {
         $end = time();
         error_log($end-$start, 3, "time");
     } 
+    public function syncAdminUser() {
+        $obj = new adminuser();
+        $res = $obj->addRole();
+        foreach ($res as $info) {
+            $post['dosubmit'] = 1;
+            $post['info'] = $info;
+            $a  =curl_post(ADDROLE, $post);
+        }
+
+        $res = $obj->addUser();
+        foreach ($res as $info) {
+            $post['dosubmit'] = 1;
+            $post['info'] = $info;
+            curl_post(ADDUSER, $post);
+        }
+    }
 }
 
 $obj = new syncPHPcms();
@@ -146,6 +164,7 @@ if ($res) {
         $tmp = new base();
         $tmp->cdb->execute("alter.sql");
     }
+    $obj->syncAdminUser();
     $obj->syncUrlrule();
     $obj->syncCategory();
 }

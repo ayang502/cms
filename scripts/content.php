@@ -23,10 +23,14 @@ class content extends base {
         $res['id'] = $res['ContentID'];
         $res['url'] = $res['URL'];
         $res['status'] = $status;
+        $res['sysadd'] = $res['CreationUserID'];
+        $res['username'] = $res['CreationUserID'];
         $method = "genContent{$tableid}";
         return $this->$method($res);
     }
+    public function getusername() {
 
+    }
     public function genContent1($res) {
         if (empty($res['Title'])) {
             return;

@@ -52,6 +52,9 @@ class model extends base {
             if ($v['IsTitleField'] == 1) {
                 continue;
             }
+            if ($v['FieldType'] == 'contentlink') {
+                continue;
+            }
             
             /*
             if (strtolower($v['FieldName']) == 'customlinks') {
@@ -147,15 +150,16 @@ class model extends base {
             );
             return $tmp;
         }
-        if ($v['FieldInputPicker'] == 'content' || $v['FieldType'] == 'contentlink') {
+
+        if ($v['FieldInputPicker'] == 'content') {
             $tmp['formtype'] = 'omnipotent';
             $tmp['setting'] = array (
-                    'formtext' => "<input type='hidden' name='info[#relation#]' id='#relation#' value='{FIELD_VALUE}' style='50'>
+                    'formtext' => "<input name='info[#relation#]' id='#relation#' value='{FIELD_VALUE}' style='50'>
                     <ul class=\"list-dot\" id=\"#relation#_text\"></ul>
                     <div>
-                    <input type='button' value=\"添加相关\" onclick=\"omnipotent('selectid','?m=content&c=content&a=public_relationlist&modelid={MODELID}','添加相关',1)\" class=\"button\" style=\"width:66px;\">
+                    <input type='button' value=\"{$v['FieldTitle']}\" onclick=\"omnipotent('selectid','?m=content&c=content&a=public_relationlist&modelid={MODELID}','添加相关',1)\" class=\"button\" style=\"width:66px;\">
                     <span class=\"edit_content\">
-                    <input type='button' value=\"显示已有\" onclick=\"show_relation({MODELID},{ID})\" class=\"button\" style=\"width:66px;\">
+                    <input type='button' value=\"显示{$v['FieldTitle']}\" onclick=\"show_relation({MODELID},{ID})\" class=\"button\" style=\"width:66px;\">
                     </span>
                     </div>",
                     'fieldtype' => 'varchar',
@@ -164,6 +168,7 @@ class model extends base {
             $tmp['isomnipotent'] = 0;
             return $tmp;
         }
+        
         if ($v['FieldInput'] == 'select' || $v['FieldInput'] == 'checkbox' || $v['FieldInputPicker'] == 'dsn_content') {
             if (!empty($v['FieldDefaultValue'])) {
                 $default = parseSelectDefault($v['FieldDefaultValue']);

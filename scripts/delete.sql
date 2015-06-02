@@ -1,0 +1,10 @@
+delete from v9_site where siteid>1;
+alter table v9_site AUTO_INCREMENT=1;
+delete from v9_model where modelid>11;
+alter table v9_model AUTO_INCREMENT=11;
+delete from v9_type where modelid>11;
+alter table v9_type AUTO_INCREMENT=11;
+delete from v9_model_field where modelid>11;
+alter table v9_model_field AUTO_INCREMENT=200;
+truncate table v9_category;
+truncate table v9_hits;
