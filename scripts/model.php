@@ -52,21 +52,6 @@ class model extends base {
             if ($v['IsTitleField'] == 1) {
                 continue;
             }
-            if ($v['FieldType'] == 'contentlink') {
-                continue;
-            }
-            
-            /*
-            if (strtolower($v['FieldName']) == 'customlinks') {
-                continue;
-            }
-            if ($v['FieldName'] == 'Keywords') {
-                continue;
-            }
-            if ($v['FieldName'] == 'Intro') {
-                continue;
-            }
-            */
             if ($v['FieldName'] == 'TitleColor') {
                 continue;
             }
@@ -74,7 +59,7 @@ class model extends base {
             $tmp = array();
             $modelname = $this->cmmodel[$v['TableID']];
             $model = $this->getCmsModelID($modelname, $siteid);
-            $tmp =  $this->getSepcSetting($v); 
+            $tmp =  $this->getSepcSetting($v, $model['modelid']); 
             
             if (isset($tmp['formtype']) && !empty($tmp['formtype'])) {
                 $tmp['formtype'] = $tmp['formtype'];
@@ -83,7 +68,6 @@ class model extends base {
             }
             if (isset($tmp['setting']) && !empty($tmp['setting'])) {
                 $tmp['setting'] = $tmp['setting'];
-                $tmp['setting'] = str_replace("#relation#", $v['FieldName'], $tmp['setting']);
             }
             $tmp['siteid'] = $siteid;
             $tmp['field'] = $v['FieldName'];
@@ -122,7 +106,7 @@ class model extends base {
         return $return;
     }
 
-    public function getSepcSetting($v) {
+    public function getSepcSetting($v, $modelid) {
         $tmp = array();
         if ($v['FieldInputPicker'] == 'upload') {
             $tmp['formtype'] = 'image';
@@ -151,19 +135,32 @@ class model extends base {
             return $tmp;
         }
 
-        if ($v['FieldInputPicker'] == 'content') {
+        if ($v['FieldType'] == 'contentlink') {
             $tmp['formtype'] = 'omnipotent';
             $tmp['setting'] = array (
-                    'formtext' => "<input name='info[#relation#]' id='#relation#' value='{FIELD_VALUE}' style='50'>
-                    <ul class=\"list-dot\" id=\"#relation#_text\"></ul>
-                    <div>
-                    <input type='button' value=\"{$v['FieldTitle']}\" onclick=\"omnipotent('selectid','?m=content&c=content&a=public_relationlist&modelid={MODELID}','添加相关',1)\" class=\"button\" style=\"width:66px;\">
-                    <span class=\"edit_content\">
-                    <input type='button' value=\"显示{$v['FieldTitle']}\" onclick=\"show_relation({MODELID},{ID})\" class=\"button\" style=\"width:66px;\">
-                    </span>
-                    </div>",
-                    'fieldtype' => 'varchar',
-                    'minnumber' => '1',
+                'formtext' => "<input name='info[".$v['FieldName']."]' id='" . $v['FieldName'] . "' value='{FIELD_VALUE}' style='50'>
+                        <div>
+                            <input type='button' value=\"添加相关\" onclick=\"omnipotent('selectid','?m=content&c=content&a=public_relation&modelid=".$modelid."&relation_var=".$v['FieldName']."&type=id','添加相关',1)\" class=\"button\" style=\"width:66px;\">
+                        </div>",
+                'fieldtype' => 'varchar',
+            );
+            $tmp['isomnipotent'] = 0;
+            return $tmp;
+        }
+
+        if ($v['FieldInputPicker'] == 'content') {
+            if (false === strpos(strtolower($v['FieldName']), "id")) {
+                $type = 'title';
+            } else {
+                $type = 'id';
+            }
+            $tmp['formtype'] = 'omnipotent';
+            $tmp['setting'] = array (
+                    'formtext' => "<input name='info[{$v['FieldName']}]' id='{$v['FieldName']}' value='{FIELD_VALUE}' style='50'>
+                        <div>
+                        <input type='button' value=\"添加相关\" onclick=\"omnipotent('selectid','?m=content&c=content&a=public_relation&modelid={$modelid}&relation_var={$v['FieldName']}&type={$type}','添加相关',1)\" class=\"button\" style=\"width:66px;\">
+                        </div>",
+                'fieldtype' => 'varchar',
             );
             $tmp['isomnipotent'] = 0;
             return $tmp;

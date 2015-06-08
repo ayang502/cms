@@ -1,8 +1,9 @@
 <?php
 class content extends base {
     public function getmodelID($catid) {
+        $cdb = helper::getDB('phpcms');
         $sql = "select modelid from {$this->table}_category where catid=$catid";
-        return $this->cdb->fetchOne($sql);
+        return $cdb->fetchOne($sql);
     }
     public function genPost($res, $status, $catid, $tableid) {
         if (false === $this->isCatExists($catid)) {
@@ -10,6 +11,7 @@ class content extends base {
         }
         $tmp = $this->getmodelID($catid);
         $modelid = $tmp['modelid'];
+        $this->modelid = $modelid;
         unset($tmp);
         $res['modelid'] = $modelid;
         $res['catid'] = $catid;
@@ -28,13 +30,22 @@ class content extends base {
         $method = "genContent{$tableid}";
         return $this->$method($res);
     }
+    public function genRelation($v) {
+        if (empty($v)) return;
+        foreach ($tmp as $t) {
+            $relation[] = $this->modelid . ',' . $t;
+        }
+        $res = join('|', $relation);
+        return $res;
+    }
     public function getusername($id) {
         $sql = "select username from {$this->table}_admin where userid={$id}";
-        $res = $this->cdb->fetchOne($sql);
+        $cdb = helper::getDB('phpcms');
+        $res = $cdb->fetchOne($sql);
         if (empty($res)) {
             return 'admin';
         }
-        return $res['usernmae'];
+        return $res['username'];
     }
     public function genContent1($res) {
         if (empty($res['Title'])) {
@@ -46,13 +57,13 @@ class content extends base {
         }
         $res['keywords'] = $res['Keywords'];
         $res['content'] = $res['Content'];
-        $res['CustomLinks'] = str_replace(',', '|', $res['CustomLinks']);
-        $res['SchoolID'] = str_replace(',', '|', $res['SchoolID']);
-        $res['AgentID'] = str_replace(',', '|', $res['AgentID']);
-        $res['Agent_Name'] = str_replace(',', '|', $res['Agent_Name']);
-        $res['School_Name'] = str_replace(',', '|', $res['School_Name']);
-        $res['USAER_SchoolID'] = str_replace(',', '|', $res['USAER_SchoolID']);
-        $res['USAER_School_Name'] = str_replace(',', '|', $res['USAER_School_Name']);
+        $res['CustomLinks'] = $this->genRelation($res['CustomLinks']);
+        $res['SchoolID'] = $this->genRelation($res['SchoolID']);
+        $res['AgentID'] = $this->genRelation($res['AgentID']);
+        $res['Agent_Name'] = $this->genRelation($res['Agent_Name']);
+        $res['School_Name'] = $this->genRelation($res['School_Name']);
+        $res['USAER_SchoolID'] = $this->genRelation($res['USAER_SchoolID']);
+        $res['USAER_School_Name'] = $this->genRelation($res['USAER_School_Name']);
         return $res;
     }
     public function genContent2($res) {
@@ -62,9 +73,9 @@ class content extends base {
         $res = $res;
         $res['title'] = $res['Title'];
         $res['content'] = $res['Intro'];
-        $res['CustomLinks'] = str_replace(',', '|', $res['CustomLinks']);
-        $res['SchoolID'] = str_replace(',', '|', $res['SchoolID']);
-        $res['CustomSoftLinks'] = str_replace(',', '|', $res['CustomSoftLinks']);
+        $res['CustomLinks'] = $this->genRelation($res['CustomLinks']);
+        $res['SchoolID'] = $this->genRelation($res['SchoolID']);
+        $res['CustomSoftLinks'] = $this->genRelation($res['CustomSoftLinks']);
         return $res; 
     }
     
@@ -90,8 +101,8 @@ class content extends base {
         }
         $res = $res;
         $res['title'] = $res['CompanyName'];
-        $res['Schools'] = str_replace(',', '|', $res['Schools']);
-        $res['TopSchools'] = str_replace(',', '|', $res['TopSchools']);
+        $res['Schools'] = $this->genRelation($res['Schools']);
+        $res['TopSchools'] = $this->genRelation($res['TopSchools']);
         return $res;
     }
     
@@ -108,8 +119,8 @@ class content extends base {
             return $res;
         }
         $res['title'] = $res['SchoolName'];
-        $res['SchoolID'] = str_replace(',', '|', $res['SchoolID']);
-        $res['AgentID'] = str_replace(',', '|', $res['AgentID']);
+        $res['SchoolID'] = $this->genRelation($res['SchoolID']);
+        $res['AgentID'] = $this->genRelation($res['AgentID']);
         return $res;
     }
     public function genContent8($res) {
@@ -117,7 +128,7 @@ class content extends base {
             return;
         }
         $res['title'] = $res['Title'];
-        $res['AgentID'] = str_replace(',', '|', $res['AgentID']);
+        $res['AgentID'] = $this->genRelation($res['AgentID']);
         return $res;
     }
 
@@ -133,9 +144,9 @@ class content extends base {
             return;
         }
         $res['title'] = $res['about_SchoolID'];
-        $res['about_SchoolID'] = str_replace(',', '|', $res['about_SchoolID']);
-        $res['about_SchoolName'] = str_replace(',', '|', $res['about_SchoolName']);
-        $res['about_School_E_Name'] = str_replace(',', '|', $res['about_School_E_Name']);
+        $res['about_SchoolID'] = $this->genRelation($res['about_SchoolID']);
+        $res['about_SchoolName'] = $this->genRelation($res['about_SchoolName']);
+        $res['about_School_E_Name'] = $this->genRelation($res['about_School_E_Name']);
         return $res;
     }
     public function genContent12($res) {
@@ -143,9 +154,9 @@ class content extends base {
             return;
         }
         $res['title'] = $res['SchoolID'];
-        $res['SchoolID'] = str_replace(',', '|', $res['SchoolID']);
-        $res['Link_Grade'] = str_replace(',', '|', $res['Link_Grade']);
-        $res['Link_MajorIDs'] = str_replace(',', '|', $res['Link_MajorIDs']);
+        $res['SchoolID'] = $this->genRelation($res['SchoolID']);
+        $res['Link_Grade'] = $this->genRelation($res['Link_Grade']);
+        $res['Link_MajorIDs'] = $this->genRelation($res['Link_MajorIDs']);
         return $res;
     }
 
@@ -164,11 +175,13 @@ class content extends base {
     }
     public function getSiteId($catid) {
         $sql = "select siteid from {$this->table}_category where catid={$catid}";
-        return $this->cdb->fetchOne($sql);
+        $cdb = helper::getDB('phpcms');
+        return $cdb->fetchOne($sql);
     }
     public function isCatExists($catid) {
         $sql = "select * from {$this->table}_category where catid={$catid}";
-        $res = $this->cdb->fetchOne($sql);
+        $cdb = helper::getDB('phpcms');
+        $res = $cdb->fetchOne($sql);
         if (empty($res)) {
             return false;
         }

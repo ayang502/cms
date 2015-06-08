@@ -32,6 +32,7 @@ class syncPHPcms extends phpcms {
                 } else {
                     $arr['CreationUserID'] = 1;
                 }
+                
                 $arr['URL'] = $v['URL'];
                 $post['dosubmit'] = 1;
                 $tmp = $obj->getSiteId($catid);
@@ -43,6 +44,7 @@ class syncPHPcms extends phpcms {
                     continue;
                 }
                 $post['info'] = $a;
+                continue;
                 $url = sprintf(ADDCONENTURL, $catid);
                 $res = curl_post($url, $post);
                 $a = strip_tags($res);
@@ -53,7 +55,7 @@ class syncPHPcms extends phpcms {
             }
         }
         $end = time();
-        error_log($end-$start, 3, "time");
+        error_log(($end-$start)."\n", 3, "time");
     } 
 }
 $NodeID = $argv[1];

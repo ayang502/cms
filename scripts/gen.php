@@ -23,12 +23,17 @@ foreach ($res as $v) {
 }
 asort($arr);
 foreach ($arr as $nodeid=>$num) {
-    if ($num < 1000) {
-        $tmp[] = $nodeid;
+    if ($num > 500 && $num <= 1000) {
+        $tmp1[] = $nodeid;
+    } else if ($num <= 500) {
+        $tmp2[] = $nodeid;
     } else {
         echo "php syncContent.php {$nodeid} &\n";
     }
 }
-if (!empty($tmp)) {
-    echo "php syncContent.php ".join(',', $tmp)." &\n";
+if (!empty($tmp1)) {
+    echo "php syncContent.php ".join(',', $tmp1)." &\n";
+}
+if (!empty($tmp2)) {
+    echo "php syncContent.php ".join(',', $tmp2)." &\n";
 }

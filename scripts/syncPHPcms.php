@@ -8,13 +8,9 @@ class syncPHPcms extends phpcms {
         foreach ($arr as $v) {
             $post = $v;
             $post['dosubmit'] = 1;
-            print_r($post);
-            continue;
-            if ($v['siteid'] ==1) {
-                $res = curl_post(EDITSITEURL . '&siteid='.$v['siteid'], $post);
-            } else {
-                $res = curl_post(ADDSITEURL, $post);
-            } 
+            $res = curl_post(ADDSITEURL, $post);
+            $a = strip_tags($res);
+            echo $a;
         }
     }
 
@@ -157,9 +153,11 @@ $obj = new syncPHPcms();
 $res = $obj->loginCms();
 
 if ($res) {
+    /*
     $obj->syncSite();
     $obj->syncModel();
     $obj->syncModelFields();
+    */
     if (is_file("alter.sql")) {
         $tmp = new base();
         $tmp->cdb->execute("alter.sql");

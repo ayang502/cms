@@ -1,6 +1,14 @@
 <?php
 //迁移站点设置
 class sites extends base {
+    private $dir = array(
+        '中英网UKER.net'  => "www",
+        '内部调用'        => "/",
+        '中美网USAer.net' => "usaer",
+        '澳大利亚'        => 'aus',
+        '平台合作'        => 'channel',
+    );
+
     private $setting = 
         array (
             'upload_maxsize' => '2048',
@@ -27,18 +35,20 @@ class sites extends base {
             if ($v['Name'] == '废弃节点') {
                 continue;
             }
+            if ($v['Name'] == 'SEO运营') {
+                continue;
+            }
             $arr = array();
             $a =  $style = '';
             if (!empty($v['ResourcePSN'])) {
                 $a = explode('}', $v['ResourcePSN']);
                 $a = substr($a[0], 5);
                 $arr['domain'] = $this->psn[$a]['URL'];
-                $arr['dirname'] = $this->psn[$a]['DIR'];
+                $arr['dirname'] = $this->dir[$v['Name']];
             } else {
                 $arr['domain'] = '';
-                $arr['dirname'] = 'html';
+                $arr['dirname'] = "html_{$v['NodeID']}"; 
             }
-            $arr['dirname'] .= "_{$v['NodeID']}"; 
             $arr['siteid'] = $v['NodeID'];
             $arr['name'] = $v['Name'];
             $arr['site_title'] = $v['Name'];
