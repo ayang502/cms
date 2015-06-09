@@ -56,6 +56,13 @@ class category extends base {
             $post['category_php_ruleid'] = 6;
             $post['show_php_ruleid'] = 16;
         }
+        if (!empty($v['IndexTpl'])) {
+            $setting['cms_list_tpl'] = $v['IndexTpl'];
+        }
+        if (!empty($v['ContentTpl'])) {
+            $setting['cms_show_tpl'] = $v['ContentTpl'];
+        }
+
         $post['info'] = $info;
         $post['setting'] = $setting;
         return $post;

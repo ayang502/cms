@@ -62,7 +62,7 @@ class sites extends base {
                 $style = 'default';
             }
             $arr['default_style'] = $style;
-            $arr['template'] = $style;
+            $arr['template'] = array($style);
             $res[] = $arr;
         }
         return $res;
