@@ -9,7 +9,6 @@ class syncPHPcms extends phpcms {
         $start = time();
         $id = 0;
         while(true) {
-            $obj = new content();
             $wdb = helper::getDB('cmsware');
             $sql = "select * from cmsware_content_index where NodeID in ({$this->nodeID})  and IndexID > {$id} order by IndexID asc limit 100"; 
             $res = $wdb->fetchAll($sql);
@@ -17,9 +16,11 @@ class syncPHPcms extends phpcms {
                 break;
             }
             foreach ($res as $k=>$v) {
+                usleep(100);
                 $id = $v['IndexID'];
                 $catid = $v['NodeID'];
                 $arr = array();
+                $obj = new content();
                 $publish = $obj->getPublish($v['TableID'], $v['ContentID']);
                 $content = $obj->getContent($v['TableID'], $v['ContentID']);
                 $status = 99;
@@ -38,13 +39,12 @@ class syncPHPcms extends phpcms {
                 $tmp = $obj->getSiteId($catid);
                 $post['siteid'] = $tmp['siteid'];
                 $a = $obj->genPost($arr, $status, $catid, $v['TableID']);
-                error_log("$id\n", 3, "id.log");
                 if (empty($a)) {
                     error_log("$id\n", 3, "indexid.log");    
                     continue;
                 }
+                error_log("$id\n", 3, "id.log");
                 $post['info'] = $a;
-                continue;
                 $url = sprintf(ADDCONENTURL, $catid);
                 $res = curl_post($url, $post);
                 $a = strip_tags($res);

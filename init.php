@@ -29,6 +29,9 @@ class helper {
     }
 
     public static function getDB($dbName) {
+        if (isset(self::$dbObjs[$dbName]) && !self::$dbObjs[$dbName]) {
+            return self::$dbObjs[$dbName];
+        }
         $dbConf = self::getConf($dbName);
         self::$dbObjs[$dbName] = new Db($dbConf);
         return self::$dbObjs[$dbName];

@@ -31,7 +31,11 @@ class content extends base {
         return $this->$method($res);
     }
     public function genRelation($v) {
-        if (empty($v)) return;
+        $v = trim($v);
+        if (empty($v) || is_null($v) || strtolower($v) == 'null') {
+            return;
+        }
+        $tmp = explode(',', $v);
         foreach ($tmp as $t) {
             $relation[] = $this->modelid . ',' . $t;
         }

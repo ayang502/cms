@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/../init.php";
+include "iconv.func.php";
 class category extends base {
     public function __construct() {
         parent::__construct();
@@ -42,7 +43,7 @@ class category extends base {
         
         $info['modelid'] = $res['modelid'];
         $info['catname'] = $v['Name'];
-        $info['catdir'] = $v['NodeID'];
+        $info['catdir'] = join("", gbk_to_pinyin($v['Name']));
         $info['ismenu'] = 0;
         if ($v['PublishMode'] == 1) {
             $setting['ishtml'] = 1;

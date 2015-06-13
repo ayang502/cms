@@ -1,15 +1,23 @@
 <?php
 class Db {
+    public $_objLink = '';
     public function __construct ($arrConfig = null) {
         $this->_arrConfig = $arrConfig;
     }
     
-    protected function _connect () {                
-        $dsn = "mysql:host={$this->_arrConfig['host']};dbname={$this->_arrConfig['database']};port={$this->_arrConfig['port']};charset={$this->_arrConfig['charset']}";
-        $this->_objLink = new PDO($dsn, $this->_arrConfig['username'], $this->_arrConfig['password']);
-        $this->_objLink->exec("set names 'utf8' ");
-        $this->_objLink->exec("set character_set_client=utf8");
-        $this->_objLink->exec("set character_set_results=utf8");
+    public function _connect () {                
+        if (!$this->_objLink) {
+            $dsn = "mysql:host={$this->_arrConfig['host']};dbname={$this->_arrConfig['database']};port={$this->_arrConfig['port']};charset={$this->_arrConfig['charset']}";
+            try {
+                $this->_objLink = new PDO($dsn, $this->_arrConfig['username'], $this->_arrConfig['password']);
+            } catch (PDOException $e)  {
+                $this->_objLink = new PDO($dsn, $this->_arrConfig['username'], $this->_arrConfig['password']);
+                echo $e->getMessage();
+            }
+            $this->_objLink->exec("set names 'utf8' ");
+            $this->_objLink->exec("set character_set_client=utf8");
+            $this->_objLink->exec("set character_set_results=utf8");
+        }
     }    
     
     public function execute ($strSql) {
