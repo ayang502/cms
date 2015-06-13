@@ -105,6 +105,10 @@ class syncPHPcms extends phpcms {
             curl_post(ADDUSER, $post);
         }
     }
+    public function syncIndexId() {
+        $obj = new indexId();
+        $obj->run();
+    }
 }
 
 $obj = new syncPHPcms();
@@ -121,6 +125,7 @@ if ($res) {
     }
     $obj->syncAdminUser();
     $obj->syncUrlrule();
-     */
     $obj->syncCategory();
+     */
+    $obj->syncIndexId();
 }

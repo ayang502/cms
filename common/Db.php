@@ -47,7 +47,13 @@ class Db {
         $v = "\"" . join("\",\"", $arr) . "\"";
         $sql = "insert into {$table} {$f} values({$v})";
         $this->_connect();
-        return $this->_objLink->exec($sql);
+        $res = $this->_objLink->exec($sql);
+        if (!$res) {
+            echo $sql;
+            echo "\n";
+            exit;
+        }
+        return $res;
     }
     public function update($table, $arr, $where) {
         $sql = "update {$table} set ";
@@ -69,7 +75,13 @@ class Db {
         }
         $sql = "insert into {$table} {$f} values ".join(',', $d);
         $this->_connect();
-        return $this->_objLink->exec($sql);
+        $res = $this->_objLink->exec($sql);
+        if (!$res) {
+            echo $sql;
+            echo "\n";
+            exit;
+        }
+        return $res;
     }
 
     public function truncateTable($table) {
