@@ -54,6 +54,7 @@ class syncPHPcms extends phpcms {
         $cate->deleteCate();
         $r = $cate->getCmsSite();
         $w = $cate->getCwSite();
+        $all = $cate->getAllSite();
         foreach ($w as $k=>$v) {
             if (!isset($r[$k])) continue;
             $siteid = $r[$k];
@@ -67,7 +68,7 @@ class syncPHPcms extends phpcms {
                         } else {
                             $tmp = $parent;
                         }
-                        $post = $cate->genPost($vvv, $tmp, $siteid);
+                        $post = $cate->genPost($vvv, $tmp, $siteid, $all[$siteid]['template']);
                         $post['dosubmit'] = 1;
                         $post['siteid'] = $siteid;
                         $url = sprintf(ADDCATEFIELDEURL, $parent, $level);
@@ -87,50 +88,7 @@ class syncPHPcms extends phpcms {
         $obj->cdb->execute($sqlfile);
     }
 
-    public function syncContent() {
-        $start = time();
-        $id = 0;
-        while(true) {
-            $obj = new content();
-            $wdb = helper::getDB('cmsware');
-            $sql = "select * from cmsware_content_index where IndexID > {$id} order by IndexID asc limit 100"; 
-            $res = $wdb->fetchAll($sql);
-            if (empty($res)) {
-                break;
-            }
-            foreach ($res as $k=>$v) {
-                $id = $v['IndexID'];
-                $catid = $v['NodeID'];
-                $arr = array();
-                $arr = $obj->getPublish($v['TableID'], $v['ContentID']);
-                $status = 99;
-                if (empty($arr)) {
-                    $arr = $obj->getContent($v['TableID'], $v['ContentID']);
-                    $status = 1;
-                }
-                $arr['URL'] = $v['URL'];
-                $post['dosubmit'] = 1;
-                $tmp = $obj->getSiteId($catid);
-                $post['siteid'] = $tmp['siteid'];
-                $a = $obj->genPost($arr, $status, $catid, $v['TableID']);
-                error_log("$id\n", 3, "id.log");
-                if (empty($a)) {
-                    error_log("$id\n", 3, "indexid.log");    
-                    continue;
-                }
-                $post['info'] = $a;
-                $url = sprintf(ADDCONENTURL, $catid);
-                $res = curl_post($url, $post);
-                $a = strip_tags($res);
-                if (false === strpos($a, '成功')){
-                    error_log($v['ContentID']."\n", 3, "content.log");
-                    error_log("$a\n", 3, "content.log");
-                }            
-            }
-        }
-        $end = time();
-        error_log($end-$start, 3, "time");
-    } 
+     
     public function syncAdminUser() {
         $obj = new adminuser();
         $res = $obj->addRole();
@@ -153,6 +111,7 @@ $obj = new syncPHPcms();
 $res = $obj->loginCms();
 
 if ($res) {
+    /*
     $obj->syncSite();
     $obj->syncModel();
     $obj->syncModelFields();
@@ -162,5 +121,6 @@ if ($res) {
     }
     $obj->syncAdminUser();
     $obj->syncUrlrule();
+     */
     $obj->syncCategory();
 }

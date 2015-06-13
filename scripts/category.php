@@ -30,7 +30,7 @@ class category extends base {
         $sql = "select Name from cmsware_content_table where TableID={$tableid}";
         return $this->wdb->fetchOne($sql);
     }
-    public function genPost($v, $parent, $siteid) {
+    public function genPost($v, $parent, $siteid, $template) {
         $post = $info = $setting = array();
         $info['catid'] = $v['NodeID'];
         $info['parentid'] = $parent;
@@ -57,17 +57,31 @@ class category extends base {
             $post['category_php_ruleid'] = 6;
             $post['show_php_ruleid'] = 16;
         }
-        if (!empty($v['IndexTpl'])) {
-            $setting['cms_list_tpl'] = $v['IndexTpl'];
+        if (!empty($template)) {
+            $setting['template_list'] = $template;
         }
-        if (!empty($v['ContentTpl'])) {
-            $setting['cms_show_tpl'] = $v['ContentTpl'];
-        }
-
+        $tmp = $this->genTemplate($v);
+        $setting = array_merge($tmp, $setting);
         $post['info'] = $info;
         $post['setting'] = $setting;
         return $post;
     }
+
+    public function genTemplate($v) {
+        $setting = array();
+        $setting['template_list'] = '';
+        if (!empty($v['IndexTpl'])) {
+            $setting['category_template'] = $v['IndexTpl'];
+        }
+        if (!empty($v['IndexTpl'])) {
+            $setting['show_template'] = $v['IndexTpl'];
+        }
+        if (!empty($v['ContentTpl'])) {
+            $setting['show_template'] = $v['ContentTpl'];
+        }
+        return $setting;
+    }
+
     public function deleteCate() {
         return $this->cdb->truncateTable($this->table.'_category');
     }

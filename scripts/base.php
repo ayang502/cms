@@ -45,4 +45,12 @@ class base {
         return $return;
 
     }
+    public function getAllSite() {
+        $sql = "select * from {$this->table}_site";
+        $res = $this->cdb->fetchAll($sql);
+        foreach ($res as $k=>$v) {
+            $return[$v['siteid']] = $v;
+        }
+        return $return;
+    }
 }
