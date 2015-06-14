@@ -1,7 +1,7 @@
 <?php
 return array(
     'phpcms'  => array(
-        'database' => 'phpcmsv9',
+        'database' => 'phpcmsv922',
         'host'     => '127.0.0.1',
         'username' => 'root',
         'password' => '',

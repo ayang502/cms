@@ -51,7 +51,7 @@ class Db {
         if (!$res) {
             echo $sql;
             echo "\n";
-            exit;
+            return false;
         }
         return $res;
     }
@@ -79,7 +79,7 @@ class Db {
         if (!$res) {
             echo $sql;
             echo "\n";
-            exit;
+            return false;
         }
         return $res;
     }

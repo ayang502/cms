@@ -37,6 +37,8 @@ class content extends base {
         }
         $tmp = explode(',', $v);
         foreach ($tmp as $t) {
+            $t = trim($t);
+            if (empty($t)) continue;
             $relation[] = $this->modelid . ',' . $t;
         }
         $res = join('|', $relation);

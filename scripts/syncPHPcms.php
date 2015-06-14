@@ -109,6 +109,14 @@ class syncPHPcms extends phpcms {
         $obj = new indexId();
         $obj->run();
     }
+    public function syncHists() {
+        $obj = new hists();
+        $obj->run();
+    }
+    public function syncTableModel() {
+        $obj = new tableid();
+        $obj->run();
+    }
 }
 
 $obj = new syncPHPcms();
@@ -126,6 +134,8 @@ if ($res) {
     $obj->syncAdminUser();
     $obj->syncUrlrule();
     $obj->syncCategory();
-     */
     $obj->syncIndexId();
+    $obj->syncHists();
+     */
+    $obj->syncTableModel();
 }

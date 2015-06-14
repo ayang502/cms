@@ -44,30 +44,6 @@ final class template_cache {
 		return $strlen;
 	}
 	
-    /**
-	 * 编译cmsware模板
-	 *
-	 * @param $template	模板文件名
-	 * @param $style	模板风格
-	 * @return unknown
-	 */
-	
-	public function cmsware_template_compile($template, $style = 'cmsware') {
-		$tplfile = PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.$template;
-		if (! file_exists ( $tplfile )) {
-			showmessage ( "templates".DIRECTORY_SEPARATOR.$style.$template." is not exists!" );
-		}
-		$content = @file_get_contents ( $tplfile );
-		$filepath = dirname(CACHE_PATH.'caches_template'.DIRECTORY_SEPARATOR.$style.$template);
-	    if(!is_dir($filepath)) {
-			mkdir($filepath, 0777, true);
-	    }
-	    $compiledtplfile = CACHE_PATH.'caches_template'.DIRECTORY_SEPARATOR.$style.$template.'.php';
-		$content = $this->template_parse($content);
-		$strlen = file_put_contents ( $compiledtplfile, $content );
-		chmod ( $compiledtplfile, 0777 );
-		return $strlen;
-	}
 	/**
 	 * 更新模板缓存
 	 *
@@ -91,8 +67,7 @@ final class template_cache {
 	 * @return ture
 	 */
 	public function template_parse($str) {
-		$str = preg_replace ( "/\{cmsware_template\s+(.+?)\}/", "<?php include cmsware_template(\\1); ?>", $str );
-		$str = preg_replace ( "/\{template\s+(.+?)\}/", "<?php include template(\\1); ?>", $str );
+		$str = preg_replace ( "/\{template\s+(.+)\}/", "<?php include template(\\1); ?>", $str );
 		$str = preg_replace ( "/\{include\s+(.+)\}/", "<?php include \\1; ?>", $str );
 		$str = preg_replace ( "/\{php\s+(.+)\}/", "<?php \\1?>", $str );
 		$str = preg_replace ( "/\{if\s+(.+?)\}/", "<?php if(\\1) { ?>", $str );
@@ -117,6 +92,10 @@ final class template_cache {
 		$str = preg_replace ( "/\{([A-Z_\x7f-\xff][A-Z0-9_\x7f-\xff]*)\}/s", "<?php echo \\1;?>", $str );
 		$str = preg_replace("/\{pc:(\w+)\s+([^}]+)\}/ie", "self::pc_tag('$1','$2', '$0')", $str);
 		$str = preg_replace("/\{\/pc\}/ie", "self::end_pc_tag()", $str);
+        // by laoyang
+        $str = preg_replace("/\{CMS ([^}]+)\}/ie", "self::cmsware_tag('$1', '$0')", $str);                                       
+        $str = preg_replace("/\{\/CMS\}/ie", "self::end_cmsware_tag()", $str);
+
 		$str = "<?php defined('IN_PHPCMS') or exit('No permission resources.'); ?>" . $str;
 		return $str;
 	}
@@ -269,6 +248,58 @@ final class template_cache {
 			return $str.')';
 		}
 		return false;
+	}
+    /**
+	 * 解析CMSWARE标签
+	 * @param string $op 操作方式
+	 * @param string $data 参数
+	 * @param string $html 匹配到的所有的HTML代码
+     * by laoyang
+	 */
+	public static function cmsware_tag($data, $html) {
+        $op = 'content';
+		preg_match_all("/([a-z]+)\=[\"]?([^\"]+)[\"]?/i", stripslashes($data), $matches, PREG_SET_ORDER);
+		$datas = array();
+		foreach ($matches as &$v) {
+            foreach ($v as &$vv) { 
+                $vv = strtolower($vv);
+            }
+            $datas[$v[1]] = $v[2];
+        }
+		$tag_id = md5(stripslashes($html));
+		//可视化条件
+		foreach ($matches as $v) {
+			$datas[$v[1]] = $v[2];
+            $$v[1] = $v[2];
+		}
+		$str = '';
+		$num = isset($num) && intval($num) ? intval($num) : 20;
+		$cache = isset($cache) && intval($cache) ? intval($cache) : 0;
+        $return = isset($return) && trim($return) ? trim($return) : 'data';
+        if (!isset($urlrule)) $urlrule = '';
+        if (!empty($cache) && !isset($page)) {
+            $str .= '$tag_cache_name = md5(implode(\'&\','.self::arr_to_html($datas).').\''.$tag_id.'\');if(!$'.$return.' = tpl_cache($tag_cache_name,'.$cache.')){';
+        }
+
+        if (!isset($action) || empty($action)) return false;
+        if (module_exists($op) && file_exists(PC_PATH.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.$op.DIRECTORY_SEPARATOR.'classes'.DIRECTORY_SEPARATOR.$op.'_tag.class.php')) {
+            $method = "cmsware_{$action}";
+            $str .= '$'.$op.'_tag = pc_base::load_app_class("'.$op.'_tag", "'.$op.'");if (method_exists($'.$op.'_tag, \''.$method.'\')) {';	
+            $str .= '$'.$return.' = $'.$op.'_tag->'.$method.'('.self::arr_to_html($datas).');';
+            $str .= '}';
+        }
+		if (!empty($cache) && !isset($page)) {
+			$str .= 'if(!empty($'.$return.')){setcache($tag_cache_name, $'.$return.', \'tpl_data\');}';
+			$str .= '}';
+		}
+		return "<"."?php if(defined('IN_ADMIN')  && !defined('HTML')) {echo \"<div class=\\\"admin_piao\\\" pc_action=\\\"".$op."\\\" data=\\\"".$str_datas."\\\"><a href=\\\"javascript:void(0)\\\" class=\\\"admin_piao_edit\\\">".($op=='block' ? L('block_add') : L('edit'))."</a>\";}".$str."?".">";
+	}
+	
+	/**
+	 * CMSWARE标签结束
+	 */
+	static private function end_cmsware_tag() {
+		return '<?php if(defined(\'IN_ADMIN\') && !defined(\'HTML\')) {echo \'</div>\';}?>';
 	}
 }
 ?>

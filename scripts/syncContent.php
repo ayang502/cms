@@ -7,11 +7,13 @@ class syncPHPcms extends phpcms {
 
     public function syncContent() {
         $start = time();
-        $id = 0;
+        $id = 107721;
         while(true) {
             $wdb = helper::getDB('cmsware');
-            $sql = "select * from cmsware_content_index where NodeID in ({$this->nodeID})  and IndexID > {$id} order by IndexID asc limit 100"; 
+            $sql = "select * from cmsware_content_index where NodeID in ({$this->nodeID})  and IndexID > {$id} order by IndexID asc limit 1"; 
             $res = $wdb->fetchAll($sql);
+            print_r($res);
+            exit;
             if (empty($res)) {
                 break;
             }

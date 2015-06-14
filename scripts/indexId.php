@@ -12,6 +12,7 @@ class indexId extends base {
             `nodeid` int(11) not null,
             `tableid` int(11) not null,
             `siteid` int(11) not null,
+            `parentindexid` int(11) not null, 
             primary key `indexid` (`indexid`)
         )engine=innodb charset=utf8;";
 
@@ -35,6 +36,7 @@ class indexId extends base {
                 $data['siteid'] = $tmp['siteid']+0;
                 $data['nodeid'] = $v['NodeID']+0;
                 $data['tableid'] = $v['TableID']+0;
+                $data['parentindexid'] = $v['ParentIndexID']+0;
                 $indexid = $v['IndexID'];
                 $return[] = $data;
             }
