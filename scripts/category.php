@@ -71,14 +71,15 @@ class category extends base {
         $setting = array();
         $setting['template_list'] = '';
         if (!empty($v['IndexTpl'])) {
-            $setting['category_template'] = $v['IndexTpl'];
+            $setting['category_template'] =$v['IndexTpl'];
         }
         if (!empty($v['IndexTpl'])) {
-            $setting['show_template'] = $v['IndexTpl'];
+            $setting['list_template'] =$v['IndexTpl'];
         }
         if (!empty($v['ContentTpl'])) {
             $setting['show_template'] = $v['ContentTpl'];
         }
+        $setting['create_to_html_root'] = 1;
         return $setting;
     }
 

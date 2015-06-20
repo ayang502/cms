@@ -121,9 +121,7 @@ class syncPHPcms extends phpcms {
 
 $obj = new syncPHPcms();
 $res = $obj->loginCms();
-
 if ($res) {
-    /*
     $obj->syncSite();
     $obj->syncModel();
     $obj->syncModelFields();
@@ -131,11 +129,12 @@ if ($res) {
         $tmp = new base();
         $tmp->cdb->execute("alter.sql");
     }
+    $obj->syncCategory();
     $obj->syncAdminUser();
     $obj->syncUrlrule();
-    $obj->syncCategory();
     $obj->syncIndexId();
     $obj->syncHists();
-     */
     $obj->syncTableModel();
+} else {
+    exit("登陆错误了");
 }

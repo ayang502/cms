@@ -3,6 +3,31 @@
  *  模板解析缓存
  */
 final class template_cache {
+    /**
+     * 编译cmsware模板
+     *
+     * @param $template 模板文件名
+     * @param $style    模板风格
+     * @return unknown
+     */
+
+    public function cmsware_template_compile($template, $style = 'cmsware') {
+        $tplfile = PC_PATH.'templates'.$template;
+
+        if (! file_exists ( $tplfile )) {
+            showmessage ( "templates".DIRECTORY_SEPARATOR.$template." is not exists!" );
+        }
+        $content = @file_get_contents ( $tplfile );
+        $filepath = dirname(CACHE_PATH.'caches_template'.DIRECTORY_SEPARATOR.$style.$template);
+        if(!is_dir($filepath)) {
+            mkdir($filepath, 0777, true);
+        }   
+        $compiledtplfile = CACHE_PATH.'caches_template'.DIRECTORY_SEPARATOR.$style.$template.'.php';
+        $content = $this->template_parse($content);
+        $strlen = file_put_contents ( $compiledtplfile, $content );
+        chmod ( $compiledtplfile, 0777 );
+        return $strlen;
+    } 
 	
 	/**
 	 * 编译模板
@@ -15,7 +40,7 @@ final class template_cache {
 	
 	public function template_compile($module, $template, $style = 'default') {
 		if(strpos($module, '/')=== false) {
-		$tplfile = $_tpl = PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.html';
+		    $tplfile = $_tpl = PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.html';
 		} elseif (strpos($module, 'yp/') !== false) {
 			$module = str_replace('/', DIRECTORY_SEPARATOR, $module);
 			$tplfile = $_tpl = PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.html';
@@ -93,8 +118,8 @@ final class template_cache {
 		$str = preg_replace("/\{pc:(\w+)\s+([^}]+)\}/ie", "self::pc_tag('$1','$2', '$0')", $str);
 		$str = preg_replace("/\{\/pc\}/ie", "self::end_pc_tag()", $str);
         // by laoyang
-        $str = preg_replace("/\{CMS ([^}]+)\}/ie", "self::cmsware_tag('$1', '$0')", $str);                                       
-        $str = preg_replace("/\{\/CMS\}/ie", "self::end_cmsware_tag()", $str);
+        $str = preg_replace("/\<CMS ([^>]+)\>/ie", "self::cmsware_tag('$1', '$0')", $str);                                                    
+        $str = preg_replace("/\<\/CMS\>/ie", "self::end_cmsware_tag()", $str);
 
 		$str = "<?php defined('IN_PHPCMS') or exit('No permission resources.'); ?>" . $str;
 		return $str;

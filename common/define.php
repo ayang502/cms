@@ -1,7 +1,7 @@
 <?php
 $pc_hash = "htUyeW";
 define('CMSURL', 'http://mingfu.phpcms.cn/');
-define ('USERNAME', 'root');
+define ('USERNAME', 'admin');
 define ('PASSWD', '123123');
 define ('TABLE', 'cms');
 define ('COOKIE_JAR', "/tmp/cookie.jar");

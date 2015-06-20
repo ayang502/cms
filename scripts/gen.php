@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . "/../init.php";
-$define_max = 1500;
 $db = helper::getDB("cmsware");
 $sql = "select NodeID from cmsware_site where ParentID = 0";
 $res = $db->fetchAll($sql);

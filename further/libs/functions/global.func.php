@@ -451,13 +451,18 @@ function template($module = 'content', $template = 'index', $style = '') {
 	} else {
 		$style = 'default';
 	}
+    //by laoyang
+    if (in_array($style , array('uker', 'usaer'))) {
+        return cmsware_template($template, $style);
+    }
+    //end
 	if(!$style) $style = 'default';
 	$template_cache = pc_base::load_sys_class('template_cache');
 	$compiledtplfile = PHPCMS_PATH.'caches'.DIRECTORY_SEPARATOR.'caches_template'.DIRECTORY_SEPARATOR.$style.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.php';
 	if(file_exists(PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.html')) {
-		if(!file_exists($compiledtplfile) || (@filemtime(PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.html') > @filemtime($compiledtplfile))) {
+		//if(!file_exists($compiledtplfile) || (@filemtime(PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.html') > @filemtime($compiledtplfile))) {
 			$template_cache->template_compile($module, $template, $style);
-		}
+		//}
 	} else {
 		$compiledtplfile = PHPCMS_PATH.'caches'.DIRECTORY_SEPARATOR.'caches_template'.DIRECTORY_SEPARATOR.'default'.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.php';
 		if(!file_exists($compiledtplfile) || (file_exists(PC_PATH.'templates'.DIRECTORY_SEPARATOR.'default'.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.html') && filemtime(PC_PATH.'templates'.DIRECTORY_SEPARATOR.'default'.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.html') > filemtime($compiledtplfile))) {
@@ -476,15 +481,17 @@ function template($module = 'content', $template = 'index', $style = '') {
  * @param $style
  */
 function cmsware_template($template = '/uker/www/index.html', $style = 'cmsware') {
+    $template_file = PC_PATH.'templates'.$template;
 	$template_cache = pc_base::load_sys_class('template_cache');
 	$compiledtplfile = PHPCMS_PATH.'caches'.DIRECTORY_SEPARATOR.'caches_template'.DIRECTORY_SEPARATOR.$style.$template.'.php';
-	if(file_exists(PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.$template)) {
-		if(!file_exists($compiledtplfile) || (@filemtime(PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.$template) > @filemtime($compiledtplfile))) {
+	if(file_exists($template_file)) {
+		if(!file_exists($compiledtplfile) || (@filemtime($template_file) > @filemtime($compiledtplfile))) {
 			$template_cache->cmsware_template_compile($template, $style);
 		}
 	} else {
-		showmessage('Template does not exist.'.DIRECTORY_SEPARATOR.$style.$template);
+		showmessage('Template does not exist.'.$template_file);
 	}
+    $template_cache->cmsware_template_compile($template, $style);
 	return $compiledtplfile;
 }
 /**
