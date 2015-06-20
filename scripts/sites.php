@@ -3,7 +3,7 @@
 class sites extends base {
     private $dir = array(
         '中英网UKER.net'  => "www",
-        '内部调用'        => "/",
+        '内部调用'        => "demo",
         '中美网USAer.net' => "usaer",
         '澳大利亚'        => 'aus',
         '平台合作'        => 'channel',
