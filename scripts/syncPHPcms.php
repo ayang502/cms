@@ -122,7 +122,6 @@ class syncPHPcms extends phpcms {
 $obj = new syncPHPcms();
 $res = $obj->loginCms();
 if ($res) {
-
     $obj->syncSite();
     $obj->syncModel();
     $obj->syncModelFields();
@@ -135,7 +134,7 @@ if ($res) {
     $obj->syncHists();
     $obj->syncTableModel();
     $obj->syncAdminUser();
-    $obj->syncUrlrule();
+    //$obj->syncUrlrule();
     
 } else {
     exit("登陆错误了");
