@@ -9,7 +9,10 @@ class syncPHPcms extends phpcms {
         $start = time();
         $id = 0;
         $wdb = helper::getDB('cmsware');
+        $cdb = helper::getDB('phpcms');
         while(true) {
+            $sql = "truncate table v9_session;";
+            $cdb->execute($sql);
             $sql = "select * from cmsware_content_index where NodeID in ({$this->nodeID})  and IndexID > {$id} order by IndexID asc limit 1000"; 
             $res = $wdb->fetchAll($sql);
             if (empty($res)) {
