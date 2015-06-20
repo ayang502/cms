@@ -51,7 +51,7 @@ class syncPHPcms extends phpcms {
     }
     public function syncCategory() { 
         $cate = new category();
-        //$cate->deleteCate();
+        $cate->deleteCate();
         $r = $cate->getCmsSite();
         $w = $cate->getCwSite();
         $all = $cate->getAllSite();

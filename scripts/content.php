@@ -1,9 +1,8 @@
 <?php
 class content extends base {
     public function getmodelID($catid) {
-        $cdb = helper::getDB('phpcms');
         $sql = "select modelid from {$this->table}_category where catid=$catid";
-        return $cdb->fetchOne($sql);
+        return $this->cdb->fetchOne($sql);
     }
     public function genPost($res, $status, $catid, $tableid) {
         if (false === $this->isCatExists($catid)) {
@@ -46,8 +45,7 @@ class content extends base {
     }
     public function getusername($id) {
         $sql = "select username from {$this->table}_admin where userid={$id}";
-        $cdb = helper::getDB('phpcms');
-        $res = $cdb->fetchOne($sql);
+        $res = $this->cdb->fetchOne($sql);
         if (empty($res)) {
             return 'admin';
         }
@@ -167,27 +165,23 @@ class content extends base {
     }
 
     public function getContent($tableid, $contentid) {
-        $wdb = helper::getDB('cmsware');
         $table = "cmsware_content_{$tableid}";
         $sql = "select * from {$table} where ContentID={$contentid}";
-        return $wdb->fetchOne($sql);
+        return $this->wdb->fetchOne($sql);
     }
 
     public function getPublish($tableid, $contentid) {
-        $wdb = helper::getDB('cmsware');
         $table = "cmsware_publish_{$tableid}";
         $sql = "select * from {$table} where ContentID={$contentid}";
-        return $wdb->fetchOne($sql);
+        return $this->wdb->fetchOne($sql);
     }
     public function getSiteId($catid) {
         $sql = "select siteid from {$this->table}_category where catid={$catid}";
-        $cdb = helper::getDB('phpcms');
-        return $cdb->fetchOne($sql);
+        return $this->cdb->fetchOne($sql);
     }
     public function isCatExists($catid) {
         $sql = "select * from {$this->table}_category where catid={$catid}";
-        $cdb = helper::getDB('phpcms');
-        $res = $cdb->fetchOne($sql);
+        $res = $this->cdb->fetchOne($sql);
         if (empty($res)) {
             return false;
         }

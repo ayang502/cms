@@ -7,9 +7,7 @@ class category extends base {
         $this->wtable = 'cmsware_site';
         $this->ctable = $this->table . '_category';
     }
-    public function getRootID () {
-        $res = $this->getCwSite(); 
-    }
+    
     public function get_category($category_pid=0, $level=0, &$c){
         $sql = "select * from {$this->wtable} where ParentID = $category_pid";
         $result = $this->wdb->fetchAll($sql);

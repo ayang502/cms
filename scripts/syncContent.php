@@ -8,15 +8,14 @@ class syncPHPcms extends phpcms {
     public function syncContent() {
         $start = time();
         $id = 0;
+        $wdb = helper::getDB('cmsware');
         while(true) {
-            $wdb = helper::getDB('cmsware');
-            $sql = "select * from cmsware_content_index where NodeID in ({$this->nodeID})  and IndexID > {$id} order by IndexID asc limit 1"; 
+            $sql = "select * from cmsware_content_index where NodeID in ({$this->nodeID})  and IndexID > {$id} order by IndexID asc limit 1000"; 
             $res = $wdb->fetchAll($sql);
             if (empty($res)) {
                 break;
             }
             foreach ($res as $k=>$v) {
-                usleep(100);
                 $id = $v['IndexID'];
                 $catid = $v['NodeID'];
                 $arr = array();
@@ -48,7 +47,7 @@ class syncPHPcms extends phpcms {
                 $url = sprintf(ADDCONENTURL, $catid);
                 $res = curl_post($url, $post);
                 $a = strip_tags($res);
-                if (false === strpos($a, '成功')){
+                if (false === strpos($a, '成功')) {
                     error_log($v['ContentID']."\n", 3, "content.log");
                     error_log("$a\n", 3, "content.log");
                 }            
@@ -56,7 +55,7 @@ class syncPHPcms extends phpcms {
         }
         $end = time();
         error_log(($end-$start)."\n", 3, "time");
-    } 
+    }
 }
 $NodeID = $argv[1];
 
