@@ -1,0 +1,8 @@
+1. 全新安装phpcms
+2. 修改脚本中的数据库配置,phpcms域名设置等
+3. 备份phpcms代码
+4. 拷贝修改过的phpcms代码到目录下
+5. 进入后台，清理缓存
+6. 跑脚本syncPHPCms.php
+7. 跑脚本
+8. 修改phpcms/caches/configs/system.php , (51 'html_root' => '/html',//生成静态文件路径)
