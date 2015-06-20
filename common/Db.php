@@ -19,7 +19,12 @@ class Db {
             $this->_objLink->exec("set character_set_results=utf8");
         }
     }    
-    
+    public function query($sql, $param) {
+        $this->_connect();
+        $st = $this->_objLink->prepare($sql);
+        $res = $st->execute($param);
+        return $res;
+    }
     public function execute ($strSql) {
         $this->_connect();
         $result = $this->_objLink->exec($strSql);
@@ -33,6 +38,7 @@ class Db {
         $data = $st->fetchAll(PDO::FETCH_ASSOC);
         return $data;
     }
+
     public function fetchOne($strSql) {
         $this->_connect();
         $st = $this->_objLink->prepare($strSql);

@@ -122,12 +122,17 @@ class syncPHPcms extends phpcms {
 $obj = new syncPHPcms();
 $res = $obj->loginCms();
 if ($res) {
+
     $obj->syncSite();
     $obj->syncModel();
     $obj->syncModelFields();
     if (is_file("alter.sql")) {
-        $tmp = new base();
-        $tmp->cdb->execute("alter.sql");
+        $cdb = helper::getDB("phpcms");
+        $c = file("alter.sql");
+        foreach ($c as $v) {
+            $sql = trim($v);
+            $res = $cdb->execute($sql);
+        }
     }
     $obj->syncCategory();
     $obj->syncIndexId();
