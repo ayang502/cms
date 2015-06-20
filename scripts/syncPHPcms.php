@@ -51,7 +51,7 @@ class syncPHPcms extends phpcms {
     }
     public function syncCategory() { 
         $cate = new category();
-        $cate->deleteCate();
+        //$cate->deleteCate();
         $r = $cate->getCmsSite();
         $w = $cate->getCwSite();
         $all = $cate->getAllSite();
@@ -122,19 +122,21 @@ class syncPHPcms extends phpcms {
 $obj = new syncPHPcms();
 $res = $obj->loginCms();
 if ($res) {
+
     $obj->syncSite();
-    $obj->syncCategory();
     $obj->syncModel();
     $obj->syncModelFields();
     if (is_file("alter.sql")) {
         $tmp = new base();
         $tmp->cdb->execute("alter.sql");
     }
-    $obj->syncAdminUser();
-    $obj->syncUrlrule();
+    $obj->syncCategory();
     $obj->syncIndexId();
     $obj->syncHists();
     $obj->syncTableModel();
+    $obj->syncAdminUser();
+    $obj->syncUrlrule();
+    
 } else {
     exit("登陆错误了");
 }
