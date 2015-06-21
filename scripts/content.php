@@ -35,10 +35,24 @@ class content extends base {
             return;
         }
         $tmp = explode(',', $v);
+        $relation = array();
         foreach ($tmp as $t) {
             $t = trim($t);
             if (empty($t)) continue;
-            $relation[] = $this->modelid . ',' . $t;
+            //把indexid 换成contentid
+            if (is_numeric($t)) {
+                $sql = "select ContentID from cmsware_content_index where IndexID={$t}";
+                $ware = $this->wdb->fetchOne($sql);
+                if (empty($ware) || empty($ware['ContentID'])) {
+                    continue;
+                }
+                $contentid = $ware['ContentID'] + 0;
+                if ($contentid != 0) {
+                    $relation[] = $this->modelid . ',' . $contentid;
+                }
+            } else {
+                $relation[] = $this->modelid . ',' . $t;
+            }
         }
         $res = join('|', $relation);
         return $res;
