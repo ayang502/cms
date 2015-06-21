@@ -9,7 +9,6 @@ class category extends admin {
 		parent::__construct();
 		$this->db = pc_base::load_model('category_model');
 		$this->siteid = $this->get_siteid();
-        if (isset($_REQUEST['siteid'])) $this->siteid = $_REQUEST['siteid'];
 	}
 	/**
 	 * 管理栏目

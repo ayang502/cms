@@ -31,8 +31,14 @@ foreach ($arr as $nodeid=>$num) {
     }
 }
 if (!empty($tmp1)) {
-    echo "php syncContent.php ".join(',', $tmp1)." &\n";
+    $ttt = array_chunk($tmp1, 10);
+    foreach ($ttt as $v) {
+        echo "php syncContent.php ".join(',', $v)." &\n";
+    }
 }
 if (!empty($tmp2)) {
-    echo "php syncContent.php ".join(',', $tmp2)." &\n";
+    $ttt = array_chunk($tmp2, 10);
+    foreach ($ttt as $v) {
+        echo "php syncContent.php ".join(',', $v)." &\n";
+    }
 }
