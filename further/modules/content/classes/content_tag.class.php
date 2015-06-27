@@ -2,6 +2,9 @@
 class content_tag {
 	private $db;
 	public function __construct() {
+        //add by laoyang
+        $this->init_cmsware_db();
+        //END
 		$this->db = pc_base::load_model('content_model');
 		$this->position = pc_base::load_model('position_data_model');
 	}
@@ -303,24 +306,24 @@ class content_tag {
 		);
 	}
     /*** 以下 by laoyang**/
-    private function init_db() {
+    private function init_cmsware_db() {
         pc_base::load_sys_class('db_factory', '', 0);
-        $db_config = pc_base::load_config('database');
-        $db_setting = 'default';
-        $db = db_factory::get_instance($db_config)->get_database($db_setting);
-        return $db;
+        $this->cmsware_db_config = pc_base::load_config('database');
+        $this->cmsware_db_setting = 'default';
+        $this->cmsware_db = db_factory::get_instance($this->cmsware_db_config)->get_database($this->cmsware_db_setting);
+        $this->cmsware_db_tablepre = $this->cmsware_db_config[$this->cmsware_db_setting]['tablepre'];
+        $this->obj_category = pc_base::load_model('category_model');
+        $this->obj_model = pc_base::load_model('sitemodel_model');
+
     }
 
     public function cmsware_content($data) {
-        $db_config = pc_base::load_config('database');
-        $db_tablepre = $db_config['default']['tablepre'];
-        $db = $this->init_db(); 
         $indexid = $data['indexid'];
-        $table_name = $db_tablepre . 'index_mapping';
+        $table_name = $this->cmsware_db_tablepre. 'index_mapping';
         //cmsware兼容老数据
         if (is_numeric($indexid)) {
             $where = "indexid = {$data['indexid']}";
-            $res = $db->select('*', $table_name, $where, 1, '', '', ''); 
+            $res = $this->cmsware_db->select('*', $table_name, $where, 1, '', '', ''); 
             if (empty($res) || empty($res[0]) || !isset($res[0])) {
                 return array();
             }
@@ -340,18 +343,9 @@ class content_tag {
             foreach($arr as $v) {
                 $tmp = explode(',', $v);
                 if(empty($tmp) || empty($tmp[0]) || empty($tmp[1])) continue;
-                $modelid = $tmp[0];
-                $indexid = $tmp[1];
-                $where = "indexid = {$indexid}";
-                $res = $db->select('*', $table_name, $where, 1, '', '', ''); 
-                if (empty($res) || empty($res[0])) {
-                    continue;
-                }
-                $res = $res[0];
-                if ($modelid == 0) {
-                    continue;
-                }
-                $return = $this->db->get_content_bymodelid($modelid, $res['contentid']);
+                $modelid   = $tmp[0];
+                $contentid = $tmp[1];
+                $return = $this->db->get_content_bymodelid($modelid, $contentid);
                 $return = array_merge($res, $return);
                 if (!empty($return)) {
                     $result[] = $return;
@@ -361,26 +355,86 @@ class content_tag {
         return $result;
     }
     
+    public function cmsware_list($params) {
+        extract ($params, EXTR_PREFIX_SAME, "cms_");
+        $isIgnore = false;
+        if (!empty($ignore)) {
+            $ignoreNodeIds = explode(',', $ignore);
+            $isIgnore = true;
+        }
+        $catid = $nodeid;
+        //取出单个的栏目下的
+        if (is_numeric($catid)) {
+            $modelid = $this->obj_category->select("catid={$catid}", 'modelid');
+            $tablenames = $this->obj_model->select("modelid={$modelid[0]['modelid']}", 'tablename');
+            $tablename =$this->cmsware_db_tablepre . $tablenames[0]['tablename'];
+            $list_where= "  i.catid='$catid'";
+        } else if ($cateid == 'self') {
+            $catid = $GLOBALS['template']['catid'];
+            $tablenames = $this->obj_model->select("modelid={$modelid[0]['modelid']}", 'tablename');
+            $tablename =$this->cmsware_db_tablepre . $tablenames[0]['tablename'];
+            $list_where= "  i.catid='$catid'";
+        } else if (preg_match("/^[0-9]+,[0-9]+/", $catid)) { //多个节点
+            $list_where .= "  i.catid IN($catid)";
+            $catidArray = explode(',', $catid);
+            //取出所有的modelid
+            $modelids = $this->obj_category->select("catid in ({$catid})", 'modelid');
+            if (empty($modelids)) {
+                return ;
+            }
+            foreach ($modelids as $v) {
+                $array_modelids[$v['modelid']] = $v['modelid'];
+            }
+            //取出所有的model对应的表名
+            $tablenames = $this->obj_model->select("modelid in (".join(',', $array_modelids).")", 'tablename');
+            if (empty($tablenames)) {
+                return ;
+            }
+            foreach ($tablenames as $tablename) {
+                $array_tablename[] = $tablename['tablename'];
+            }
+            //只取一个表
+            $tablename = $this->cmsware_db_tablepre . $array_tablename[0];
+            //取出几个分类的表
+            $list_where = " i.catid in ({$catid})";
+        } elseif (preg_match("/^all-[^,]+/", $nodeid)) {
+            //根节点并包括所有子节点
+			$catid = str_replace("all-", '', $catid);
+            $siteids= $this->cmsware_db->select('siteid', $this->cmsware_db_tablepre . 'category', "catid=$catid"); 
+            $siteid = $siteids[0]['siteid'];
+            //取出siteid下的所有子栏目
+            $arr = $this->cmsware_db->select("arrchildid, modelid", $this->cmsware_db_tablepre . 'category', "catid={$catid}");
+            if (empty($arr) || empty($arr[0]) || empty($arr[0]['modelid'])) {
+                return;
+            }
+            $arr = $arr[0];
+            $modelid = $arr['modelid'];
+            $tablenames = $this->obj_model->select("modelid = {$modelid}", 'tablename');
+            $tablename = $this->cmsware_db_tablepre .  $tablenames[0]['tablename'];
+            $sql = "select * from {$tablename} i , {$tablename}_data c where i.id=c.id and c.catid in ({$arr['arrchildid']}) and c.caseinfo=\"活动\" limit {$num}"; 
+            echo $sql;
+            exit;
+            $st = $this->cmsware_db->query($sql);
+            while($r = $this->cmsware_db->fetch_next()) {
+                $result[] = $r;
+            }
+            return $result;
+		}
+        exit; 
+    }
+
     public function cmsware_count($params) {
-        $db = $this->init_db(); 
-        $db_config = pc_base::load_config('database');
-        $db_tablepre = $db_config['default']['tablepre'];
-
-        $obj_category = pc_base::load_model('category_model');
-        $obj_model = pc_base::load_model('sitemodel_model');
-
         extract ($params, EXTR_PREFIX_SAME, "cms_");
         $where = str_replace("PublishDate", "inputtime", $where);
         //catid就是新系统的catid
         $catid = $nodeid;
-
         if (empty($catid)) { //所有节点
             $list_where = '';
         } elseif (preg_match("/^[0-9]+,[0-9]+/", $catid)) { //多个节点
             $list_where .= "  i.catid IN($catid)";
             $catidArray = explode(',', $catid);
             //取出所有的modelid
-            $modelids = $obj_category->select("catid in ({$catid})", 'modelid');
+            $modelids = $this->obj_category->select("catid in ({$catid})", 'modelid');
             if (empty($modelids)) {
                 return ;
             }
@@ -388,7 +442,7 @@ class content_tag {
                 $array_modelids[$v['modelid']] = $v['modelid'];
             }
             //取出所有的model对应的表名
-            $tablenames = $obj_model->select("modelid in (".join(',', $array_modelids).")", 'tablename');
+            $tablenames = $this->obj_model->select("modelid in (".join(',', $array_modelids).")", 'tablename');
             if (empty($tablenames)) {
                 return ;
             }
@@ -396,15 +450,15 @@ class content_tag {
                 $array_tablename[] = $tablename['tablename'];
             }
             //只取一个表
-            $tablename = $db_tablepre . $array_tablename[0];
+            $tablename = $this->cmsware_db_tablepre . $array_tablename[0];
             //取出几个分类的表
             $list_where = " i.catid in ({$catid})";
         } elseif(preg_match("/^all-[0-9]+/", $catid)) { //根节点并包括所有子节点
             $catid = str_replace("all-",'',$catid);
-            $arr = $obj_category->select("catid={$catid}", 'arrchildid');
+            $arr = $this->obj_category->select("catid={$catid}", 'arrchildid');
             $catid = join(',', $arr);
             //取出所有的modelid
-            $modelids = $obj_category->select("catid in ({$catid})", 'modelid');
+            $modelids = $this->obj_category->select("catid in ({$catid})", 'modelid');
             if (empty($modelids)) {
                 return ;
             }
@@ -412,7 +466,7 @@ class content_tag {
                 $array_modelids[$v['modelid']] = $v['modelid'];
             }
             //取出所有的model对应的表名
-            $tablenames = $obj_model->select("modelid in (".join(',', $array_modelids).")", 'tablename');
+            $tablenames = $this->obj_model->select("modelid in (".join(',', $array_modelids).")", 'tablename');
             if (empty($tablenames)) {
                 return ;
             }
@@ -420,31 +474,30 @@ class content_tag {
                 $array_tablename[] = $tablename['tablename'];
             }
             //只取一个表
-            $tablename = $db_tablepre . $array_tablename[0];
+            $tablename = $this->cmsware_db_tablepre . $array_tablename[0];
             //取出几个分类的表
             $list_where = " i.catid in ({$catid})";
         } elseif ($catid == 'self') { //自动获取节点,可以多个节点共享一个模板，用的就是self
             $catid = $GLOBALS['template']['catid'];
-            $modelid = $obj_category->select("catid={$catid}", 'modelid');
-            $tablenames = $obj_model->select("modelid={$modelid[0]['modelid']}", 'tablename');
-            $tablename =$db_tablepre . $tablenames[0]['tablename'];
+            $modelid = $this->obj_category->select("catid={$catid}", 'modelid');
+            $tablenames = $this->obj_model->select("modelid={$modelid[0]['modelid']}", 'tablename');
+            $tablename =$this->cmsware_db_tablepre . $tablenames[0]['tablename'];
             $list_where= "  i.catid='$catid'";
         } else {//单一一个节点
-            $modelid = $obj_category->select("catid={$catid}", 'modelid');
-            $tablenames = $obj_model->select("modelid={$modelid['modelid']}", 'tablename');
-            $tablename = $db_tablepre . $tablenames['tablename'];
+            $modelid = $this->obj_category->select("catid={$catid}", 'modelid');
+            $tablenames = $this->obj_model->select("modelid={$modelid['modelid']}", 'tablename');
+            $tablename = $this->cmsware_db_tablepre . $tablenames['tablename'];
             $list_where= " i.catid='$catid'";
         }
 
         if (empty($tablename) && empty($query)) {
             //取出tableid对应的modelid
             $catid = $GLOBALS['template']['catid'];
-            $siteid = $obj_category->get_one("catid = {$catid}", 'siteid');
+            $siteid = $this->obj_category->get_one("catid = {$catid}", 'siteid');
             //取出siteid下的tableid 对应 的modelid
-            $temp = $db->get_one('tablename', "{$db_tablepre}tableid_mapping", "tableid={$tableid} and siteid={$siteid['siteid']}");
-            $tablename = $db_tablepre.$temp['tablename'];
+            $temp = $this->cmsware_db->get_one('tablename', "{$this->cmsware_db_tablepre}tableid_mapping", "tableid={$tableid} and siteid={$siteid['siteid']}");
+            $tablename = $this->cmsware_db_tablepre . $temp['tablename'];
         }
-
         $fin_where[] = 'i.status=99';
         if (!empty($list_where)) {
             $fin_where[] = $list_where;
@@ -452,33 +505,25 @@ class content_tag {
         if (!empty($where)) {
             $fin_where[] = $where;
         }
-
         if(empty($query)) {
             $sql = "SELECT {$function} as TotalNum  FROM {$tablename}_data c, {$tablename} i where i.id = c.id and " . join(' and ', $fin_where);
             $sql = $this->replaceTitle($sql);        
-            $db->query($sql);
-            $result = $db->fetch_next();
+            $this->cmsware_db->query($sql);
+            $result = $this->cmsware_db->fetch_next();
             return $result['TotalNum'];
         } else {
             $tableid = 2;
             //取出tableid对应的modelid
             //取出siteid下的tableid 对应 的modelid
-            $temp = $db->select('modelid', "{$db_tablepre}tableid_mapping", "tableid={$tableid}");
+            $temp = $this->cmsware_db->select('modelid', "{$this->cmsware_db_tablepre}tableid_mapping", "tableid={$tableid}");
             foreach ($temp as $t) {
-                $sql = "select sum(views) as TotalNum from {$db_tablepre}hits where hitsid like'c-{$t['modelid']}-%'";
-                $db->query($sql);
-                $res= $db->fetch_next();
+                $sql = "select sum(views) as TotalNum from {$this->cmsware_db_tablepre}hits where hitsid like'c-{$t['modelid']}-%'";
+                $this->cmsware_db->query($sql);
+                $res= $this->cmsware_db->fetch_next();
                 $result += $res['TotalNum'];
             }
             return $result;
         }
-    }
-
-    public function cmsware_sql($prams) {
-        
-    }
-    public function cmsware_list($data) {
-
     }
     public function cmsware_comment($data) {
 
@@ -490,6 +535,9 @@ class content_tag {
 
     }
     public function cmsware_search($data) {
+
+    }
+    public function cmsware_sql($params) {
 
     }
     private function replaceTitle($str) {
