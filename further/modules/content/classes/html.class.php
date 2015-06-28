@@ -224,6 +224,8 @@ class html {
 		$root_domain = preg_match('/^((http|https):\/\/)([a-z0-9\-\.]+)\/$/',$CAT['url']) ? 1 : 0;
 		$count_number = substr_count($CAT['url'], '/');
 		$urlrules = getcache('urlrules','commons');
+        var_dump($urlrules);
+        exit;
 		$urlrules = explode('|',$urlrules[$category_ruleid]);
 		
 		if($create_to_html_root) {

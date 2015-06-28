@@ -88,6 +88,13 @@ class content_model extends model {
 		
 		//主表
 		$tablename = $this->table_name = $this->db_tablepre.$this->model_tablename;
+
+        /** by laoyang 获取唯一contentid **/
+        $indexdb = pc_base::load_model('content_index_model');
+        $index_id = $indexdb->insert_content_index($catid, $modelid, $this->siteid);
+        $systeminfo['id'] = $index_id;
+        /* END */
+
 		$id = $modelinfo['id'] = $this->insert($systeminfo,true);
 		$this->update($systeminfo,array('id'=>$id));
 		//更新URL地址

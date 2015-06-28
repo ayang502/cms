@@ -45,9 +45,9 @@ class category extends base {
         $info['ismenu'] = 0;
         if ($v['PublishMode'] == 1) {
             $setting['ishtml'] = 1;
-            $post['category_ruleid'] = 35;
+            $post['category_html_ruleid'] = 41;
             $setting['content_ishtml'] = 1;
-            $post['show_html_ruleid'] = mapUrlRule($v['SubDir'] . $v['PublishFileFormat']);
+            $post['show_html_ruleid'] = $this->getRulID($v);
         } else if ($v['PublishMode'] == 2) {
             $post['category_php_ruleid'] = 6;
             $post['show_php_ruleid'] = 16;
@@ -62,6 +62,9 @@ class category extends base {
         $setting = array_merge($tmp, $setting);
         $post['info'] = $info;
         $post['setting'] = $setting;
+        $a = $this->getUrlAndCatid($v);
+        $post['catdir'] = $a['catdir'];
+        $post['url'] = $a['url'];
         return $post;
     }
 
@@ -84,4 +87,69 @@ class category extends base {
     public function deleteCate() {
         return $this->cdb->truncateTable($this->table.'_category');
     }
+
+    public function getRulID($v) {
+        $tmp = trim($v['PublishFileFormat']);
+        $ruleid = 32;
+        $flag = false;
+        if(empty($v['SubDir']) || 'null' == strtolower($v['SubDir'])) {
+            $flag = true;
+        }
+        switch ($tmp) {
+            case "{ContentID}.html":
+                if ($flag) {
+                    $ruleid = "32";
+                } else {
+                    $ruleid = "36";
+                }
+                break;
+
+            case "{TimeStamp}d{ContentID}.html":
+                if ($flag) {
+                    $ruleid = "34";
+                } else {
+                    $ruleid = "37";
+                }
+                break;
+            case "{IndexID}/index.html":
+                if ($flag) {
+                    $ruleid = "35";
+                } else {
+                    $ruleid = "40";
+                }
+        
+            case "[@pubSchool('{SchoolID}')]{ContentID}.html":
+                if ($flag) {
+                    $ruleid = "33";
+                } else {
+                    $ruleid = "38";
+                }
+                break;
+            case "[@strtolower(@str_replace(' ','-','{E_Name_s}'))].html":
+                if ($flag) {
+                    $ruleid = "31";
+                } else {
+                    $ruleid = "39";
+                }
+                break;
+        }
+        return $ruleid;
+    }
+
+    public function getUrlAndCatid($v) {
+        if (empty($v['ContentPSN']) || 'null' == strtolower($v['ContentPSN'])) {
+            return false;
+        }
+        $psn = trim($v['ContentPSN']);
+        $tmp = explode('}', $psn);
+        $psnid = str_replace("{PSN:", "", $tmp[0]);
+        $sql = "select * from cmsware_psn where PSNID = {$psnid}";
+        $res = $this->wdb->fetchOne($sql);
+        $catdir = str_replace("relate::", "", $res['PSN']);
+        if (!empty($tmp[1])) {
+            $catdir .= $tmp[1];
+        }
+        $url = $res['URL'] . "/";
+        return array('catdir'=>$catdir, 'url'=>$url);
+    } 
 }
