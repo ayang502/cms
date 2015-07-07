@@ -60,11 +60,15 @@ class category extends base {
         }
         $tmp = $this->genTemplate($v);
         $setting = array_merge($tmp, $setting);
+        $a = $this->getUrlAndCatid($v);
+        print_r($a);
+        if (false !== $a) {
+            $info['catdir'] = $a['catdir'];
+            $info['url'] = $a['url'];
+        }
+
         $post['info'] = $info;
         $post['setting'] = $setting;
-        $a = $this->getUrlAndCatid($v);
-        $post['catdir'] = $a['catdir'];
-        $post['url'] = $a['url'];
         return $post;
     }
 
@@ -152,4 +156,8 @@ class category extends base {
         $url = $res['URL'] . "/";
         return array('catdir'=>$catdir, 'url'=>$url);
     } 
+    public function alterTable() {
+        $sql = "alter table {$this->ctable} change catdir catdir varchar(255);";
+        $res = $this->cdb->execute($sql);
+    }
 }
