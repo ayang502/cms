@@ -22,7 +22,7 @@ class content extends base {
             $res['inputtime']   = $res['PublishDate'];
         }
         $res['id'] = $res['ContentID'];
-        $res['url'] = $res['URL'];
+        //$res['url'] = $res['URL'];
         $res['status'] = $status;
         $res['sysadd'] = $res['CreationUserID'];
         $res['username'] = $this->getusername($res['sysadd']);

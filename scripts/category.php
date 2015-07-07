@@ -41,42 +41,51 @@ class category extends base {
         
         $info['modelid'] = $res['modelid'];
         $info['catname'] = $v['Name'];
-        $info['catdir'] = join("", gbk_to_pinyin($v['Name']));
         $info['ismenu'] = 0;
         if ($v['PublishMode'] == 1) {
             $setting['ishtml'] = 1;
             $post['category_html_ruleid'] = 41;
             $setting['content_ishtml'] = 1;
             $post['show_html_ruleid'] = $this->getRulID($v);
+            $post['category_html_ruleid'] = 1;
+            $post['show_html_ruleid'] = 17;
         } else if ($v['PublishMode'] == 2) {
-            $post['category_php_ruleid'] = 6;
-            $post['show_php_ruleid'] = 16;
+            $post['category_php_ruleid'] = 1;
+            $post['show_php_ruleid'] = 17;
         } else {
-            $post['category_php_ruleid'] = 6;
-            $post['show_php_ruleid'] = 16;
+            $post['category_php_ruleid'] = 1;
+            $post['show_php_ruleid'] = 17;
         }
         if (!empty($template)) {
             $setting['template_list'] = $template;
         }
         $tmp = $this->genTemplate($v);
         $setting = array_merge($tmp, $setting);
+        /*
         $a = $this->getUrlAndCatid($v);
-        print_r($a);
-        if (false !== $a) {
+        if (false !== $a && !empty($a)) {
             $info['catdir'] = $a['catdir'];
             $info['url'] = $a['url'];
         }
+         */
 
-        $post['info'] = $info;
+        $info['catdir'] = join("", gbk_to_pinyin($v['Name']));
+        $setting['template_list'] = 'default';
+        $post['info']    = $info;
         $post['setting'] = $setting;
         return $post;
     }
 
     public function genTemplate($v) {
         $setting = array();
-        $setting['template_list'] = '';
+        $setting['template_list'] = 'default';
+        $setting ['category_template'] = 'category';
+        $setting ['list_template'] = 'list';
+        $setting ['show_template'] = 'show';
+        $setting['create_to_html_root'] = 1;
+        return $setting;
         if (!empty($v['IndexTpl'])) {
-            $setting['category_template'] =$v['IndexTpl'];
+            $setting['category_template'] = $v['IndexTpl'];
         }
         if (!empty($v['IndexTpl'])) {
             $setting['list_template'] =$v['IndexTpl'];

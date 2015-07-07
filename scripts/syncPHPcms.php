@@ -51,7 +51,7 @@ class syncPHPcms extends phpcms {
     }
     public function syncCategory() { 
         $cate = new category();
-        //$cate->deleteCate();
+        $cate->deleteCate();
         $cate->alterTable();
         $r = $cate->getCmsSite();
         $w = $cate->getCwSite();
@@ -73,7 +73,6 @@ class syncPHPcms extends phpcms {
                         $post['dosubmit'] = 1;
                         $post['siteid'] = $siteid;
                         $url = sprintf(ADDCATEFIELDEURL, $parent, $level);
-                        continue;
                         $res = curl_post($url, $post);
                         if (false === strpos($res, '成功')) {
                             error_log("\n$res", 3, "category.log");
@@ -122,8 +121,6 @@ class syncPHPcms extends phpcms {
 }
 
 $obj = new syncPHPcms();
-$obj->syncCategory();
-exit;   
 
 $res = $obj->loginCms();
 if ($res) {

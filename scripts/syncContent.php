@@ -11,14 +11,14 @@ class syncPHPcms extends phpcms {
         $wdb = helper::getDB('cmsware');
         $cdb = helper::getDB('phpcms');
         while(true) {
-            $sql = "truncate table v9_session;";
-            $cdb->execute($sql);
             $sql = "select * from cmsware_content_index where NodeID in ({$this->nodeID})  and IndexID > {$id} order by IndexID asc limit 1000"; 
             $res = $wdb->fetchAll($sql);
             if (empty($res)) {
                 break;
             }
             foreach ($res as $k=>$v) {
+                $sql = "truncate table v9_session;";
+                $res = $cdb->execute($sql);
                 $id = $v['IndexID'];
                 $catid = $v['NodeID'];
                 $arr = array();
@@ -35,8 +35,7 @@ class syncPHPcms extends phpcms {
                 } else {
                     $arr['CreationUserID'] = 1;
                 }
-                
-                $arr['URL'] = $v['URL'];
+                //$arr['URL'] = $v['URL'];
                 $post['dosubmit'] = 1;
                 $tmp = $obj->getSiteId($catid);
                 $post['siteid'] = $tmp['siteid'];
