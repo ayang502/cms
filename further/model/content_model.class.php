@@ -67,7 +67,11 @@ class content_model extends model {
 		}
 		$systeminfo['username'] = $data['username'] ? $data['username'] : param::get_cookie('admin_username');
 		$systeminfo['sysadd'] = defined('IN_ADMIN') ? 1 : 0;
-		
+        /* add by laoyang */
+        if (isset($data['sysadd']) && !empty($data['sysadd'])) {
+            $systeminfo['sysadd'] = 1;
+        }
+        /* end */
 		//自动提取摘要
 		if(isset($_POST['add_introduce']) && $systeminfo['description'] == '' && isset($modelinfo['content'])) {
 			$content = stripslashes($modelinfo['content']);
@@ -110,9 +114,11 @@ class content_model extends model {
 		$this->table_name = $this->table_name.'_data';
 		$this->insert($modelinfo);
 		//添加统计
-		$this->hits_db = pc_base::load_model('hits_model');
-		$hitsid = 'c-'.$modelid.'-'.$id;
-		$this->hits_db->insert(array('hitsid'=>$hitsid,'catid'=>$systeminfo['catid'],'updatetime'=>SYS_TIME));
+        if ($from == 1) {//by laoyang 说明是脚本导入，不再插入hit
+            $this->hits_db = pc_base::load_model('hits_model');
+            $hitsid = 'c-'.$modelid.'-'.$id;
+            $this->hits_db->insert(array('hitsid'=>$hitsid,'catid'=>$systeminfo['catid'],'updatetime'=>SYS_TIME));
+        }
 		if($data['status']==99) {
 			//更新到全站搜索
 			$this->search_api($id,$inputinfo);
@@ -239,10 +245,14 @@ class content_model extends model {
 	 * 
 	 * @param $datas
 	 */
-	public function edit_content($data,$id) {
+	public function edit_content($data,$id,$from = '') {
 		$model_tablename = $this->model_tablename;
 		//前台权限判断
-		if(!defined('IN_ADMIN')) {
+        /** by laoyang */
+        if ($from == 'api') {
+
+        } else if(!defined('IN_ADMIN')) {
+            echo 2;
 			$_username = param::get_cookie('_username');
 			$us = $this->get_one(array('id'=>$id,'username'=>$_username));
 			if(!$us) return false;

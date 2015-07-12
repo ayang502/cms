@@ -40,15 +40,22 @@ class api {
     }
 
     public function del_content() {
-
+        //获取content
+        $res = $this->index_map->get_one("indexid = {$this->indexid}");
+        if (empty($res)) {
+            echo json_decode(array('status'=>0, 'msg'=>'no index data'));
+            return;
+        }
+        //删除content 
+        $this->db->set_model($res['modelid']);
+        $res = $this->db->delete_content($res['contentid']);
+        //删除index
+        $this->index_map->delete("indexid = {$this->indexid}");
+        echo json_decode(array('status'=>0, 'msg'=>'succ'));
     }
 
     public function edit_content() {
-
-    }
-
-    public function add_content() {
-        define('INDEX_HTML');
+        define('IN_ADMIN');
         $return['status'] = 1;
         $return['msg']    = 'succ';
 
@@ -58,7 +65,8 @@ class api {
         if (empty($index_data)) {
             $return['status'] = 0;
             $return['msg']    = 'no cmsware index data';
-            return json_encode($return);
+            echo json_encode($return);
+            return;
         }
         $catid = $index_data['NodeID'];
         //获取siteid 
@@ -66,7 +74,8 @@ class api {
         if (empty($categorys)) {
             $return['status'] = 0;
             $return['msg']    = 'no category';
-            return json_encode($return);
+            echo json_encode($return);
+            return;
         }
         $this->siteid = $categorys['siteid'];
 		$this->categorys = getcache('category_content_'.$this->siteid,'commons');
@@ -77,7 +86,70 @@ class api {
         if (empty($cmsware_content)) {
             $return['status'] = 0;
             $return['msg']    = 'no cmsware content data';
-            return json_encode($return);
+            echo json_encode($return);
+            return;
+        }
+        //构建提交数据
+        $data['info'] = $this->buildPost($cmsware_content, $catid, $index_data['TableID']);
+
+        //开始编辑phpcms内容表
+        $catid = $data['info']['catid'] = intval($data['info']['catid']);
+        if(empty($data['info']) || trim($data['info']['title']) == '') {
+            $return['status'] = 0;
+            $return['msg'] = 'title is empty';
+            echo json_encode($return);
+            return;
+        }
+        $category = $this->categorys[$catid];
+        $this->modelid  = $this->categorys[$catid]['modelid'];
+        $this->db->set_model($this->modelid);
+        $data['info']['status'] = 99;
+
+        $tmp = $this->db->edit_content($data['info'], $data['info']['ContentID'], $this->from);
+        if (true != $tmp) {
+            $return['status'] = 0;
+            $return['msg'] = 'edit is faild';
+            echo json_encode($return);
+            return;
+        }
+        echo json_encode($return);
+        return;
+    }
+
+    public function add_content() {
+        define('IN_ADMIN');
+        $return['status'] = 1;
+        $return['msg']    = 'succ';
+
+        //获取cmsware indexid 对应内容
+        $this->cmsware_db->table_name = $this->cmsware_db->db_tablepre . "content_index";
+        $index_data = $this->cmsware_db->get_one('IndexID=' . $this->indexid);
+        if (empty($index_data)) {
+            $return['status'] = 0;
+            $return['msg']    = 'no cmsware index data';
+            echo json_encode($return);
+            return;
+        }
+        $catid = $index_data['NodeID'];
+        //获取siteid 
+        $categorys = $this->cat_db->get_one('catid='.$catid);
+        if (empty($categorys)) {
+            $return['status'] = 0;
+            $return['msg']    = 'no category';
+            echo json_encode($return);
+            return;
+        }
+        $this->siteid = $categorys['siteid'];
+		$this->categorys = getcache('category_content_'.$this->siteid,'commons');
+
+        //获取cmsware文章内容 
+        $this->cmsware_db->table_name = $this->cmsware_db->db_tablepre . "content_{$index_data['TableID']}"; 
+        $cmsware_content = $this->cmsware_db->get_one('ContentID=' . $index_data['ContentID']);
+        if (empty($cmsware_content)) {
+            $return['status'] = 0;
+            $return['msg']    = 'no cmsware content data';
+            echo json_encode($return);
+            return;
         }
         //构建提交数据
         $data['info'] = $this->buildPost($cmsware_content, $catid, $index_data['TableID']);
@@ -86,14 +158,13 @@ class api {
         $catid = $data['info']['catid'] = intval($data['info']['catid']);
         if(empty($data['info']) || trim($data['info']['title']) == '') {
             $return['status'] = 0;
-            $return['succ'] = 'title is empty';
-            return json_encode($return);
+            $return['msg'] = 'title is empty';
+            echo json_encode($return);
+            return;
         }
         $category = $this->categorys[$catid];
         $this->modelid  = $this->categorys[$catid]['modelid'];
         $this->db->set_model($this->modelid);
-        $setting    = string2array($category['setting']);
-        $workflowid = $setting['workflowid'];
 
         //插入mapping
         $arr = array(
@@ -110,17 +181,20 @@ class api {
         $id = $this->index_map->insert_content_index($arr);
         if (!is_numeric($id)) {
             $return['status'] = 0;
-            $return['succ'] = 'insert content index fail';
-            return json_encode($return);
+            $return['msg'] = 'insert content index fail';
+            echo json_encode($return);
+            return;
         }
         $data['info']['status'] = 99;
         $id = $this->db->add_content($data['info'], $this->isimprot, $this->from);
         if (empty($id) || !is_numeric($id)) {
             $return['status'] = 0;
-            $return['succ'] = 'sync is faild';
-            return json_encode($return);
+            $return['msg'] = 'sync is faild';
+            echo json_encode($return);
+            return;
         }
         echo json_encode($return);
+        return;
     }
 
     public function buildPost($res, $catid, $tableid) {
