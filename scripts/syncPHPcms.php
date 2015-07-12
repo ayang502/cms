@@ -121,7 +121,6 @@ class syncPHPcms extends phpcms {
 }
 
 $obj = new syncPHPcms();
-
 $res = $obj->loginCms();
 if ($res) {
     $obj->syncSite();
@@ -137,9 +136,9 @@ if ($res) {
     }
     $obj->syncUrlrule();
     $obj->syncCategory();
-    $obj->syncIndexId();
+    //$obj->syncIndexId();
     $obj->syncHists();
-    $obj->syncTableModel();
+    //$obj->syncTableModel();
     $obj->syncAdminUser();
     
 } else {

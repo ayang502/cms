@@ -15,7 +15,8 @@ define ('ADDMODELFIELDEURL', CMSURL . '?m=content&c=sitemodel_field&a=add&pc_has
 define ('ADDCATEFIELDEURL', CMSURL . '?m=admin&c=category&a=add&menuid=43&parentid=%d&s=%d&pc_hash='.$pc_hash);
 
 
-define ('ADDCONENTURL', CMSURL . '?m=content&c=content&a=add&menuid=&catid=%d&pc_hash='.$pc_hash.'&pc_hash='.$pc_hash);
+//define ('ADDCONENTURL', CMSURL . '?m=content&c=content&a=add&menuid=&catid=%d&pc_hash='.$pc_hash.'&pc_hash='.$pc_hash);
+define ('ADDCONENTURL', CMSURL . 'index.php?m=api&c=api&a=add_content&indexid=%d&from=1');
 define ('CLEANCACHE', CMSURL . '?m=admin&c=cache_all&a=init&pc_hash='.$pc_hash);
 
 define ('ADDROLE', CMSURL . '?m=admin&c=role&a=add&menuid=50&pc_hash='.$pc_hash);
